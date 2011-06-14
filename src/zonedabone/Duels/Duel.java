@@ -4,6 +4,8 @@ import java.util.HashMap;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import com.iConomy.*;
+import com.iConomy.system.Holdings;
 
 public class Duel{
 	public Player starter;
@@ -11,10 +13,14 @@ public class Duel{
 	public int starterstage;
 	public int targetstage;
 	public boolean keepItems = true;
+	int starterStake = 0;
+	int targetStake = 0;
+	iConomy iconomy;
 	
-	public Duel(Player starter, Player target){
+	public Duel(Player starter, Player target, iConomy iConomy){
 		this.starter = starter;
 		this.target = target;
+		this.iconomy = iConomy;
 		starterstage = 1;
 		targetstage = 0;
 	}
@@ -50,6 +56,12 @@ public class Duel{
 			Duels.duels.remove(target);
 		}
 		starter.sendMessage("The duel has been canceled!");
+		if(this.iconomy != null){
+			Holdings starterBalance = iConomy.getAccount(starter.getDisplayName()).getHoldings();
+			starterBalance.add(starterStake);
+			Holdings targetBalance = iConomy.getAccount(target.getDisplayName()).getHoldings();
+			targetBalance.add(targetStake);
+		}
 		Duels.duels.remove(starter);
 	}
 	public boolean lose(Player player){
@@ -63,6 +75,8 @@ public class Duel{
 			}
 			loser.sendMessage("You lost the duel!");
 			winner.sendMessage("You won the duel!");
+			Holdings winnerBalance = iConomy.getAccount(winner.getDisplayName()).getHoldings();
+			winnerBalance.add(starterStake+targetStake);
 			Duels.duels.remove(winner);
 			Duels.duels.remove(loser);
 			if(!keepItems){
@@ -113,6 +127,30 @@ public class Duel{
 		}else{
 			starter.sendMessage("Your opponent will get your items if you lose.");
 			target.sendMessage("Your opponent will get your items if you lose.");
+		}
+	}
+	
+	public void setStake(Player player, int newStake){
+		Holdings balance = iConomy.getAccount(player.getDisplayName()).getHoldings();
+		String message = player.getDisplayName() + " has set their wager to " + iConomy.format(newStake)+ ".";
+		if(player==starter){
+			int change = newStake-starterStake;
+			if(balance.hasEnough(change)){
+				balance.subtract(change);
+				starter.sendMessage(message);
+				target.sendMessage(message);
+			}else{
+				player.sendMessage("You can't afford to set your stake to that.");
+			}
+		}else{
+			int change = newStake-targetStake;
+			if(balance.hasEnough(change)){
+				balance.subtract(change);
+				starter.sendMessage(message);
+				target.sendMessage(message);
+			}else{
+				player.sendMessage("You can't afford to set your stake to that.");
+			}
 		}
 	}
 	

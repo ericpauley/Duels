@@ -12,13 +12,14 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.util.HashMap;
 import java.util.Map;
 import org.bukkit.plugin.PluginDescriptionFile;
-
+import com.iConomy.*;
 
 public class Duels extends JavaPlugin {
-
+	public iConomy iConomy = null;
     //ClassListeners
 	private final DuelsEntityListener entityListener = new DuelsEntityListener(this);
 	private final DuelsPlayerListener playerListener = new DuelsPlayerListener(this);
+	private final DuelsServerListener serverListener = new DuelsServerListener(this);
 	public static Map<Player,Duel> duels = new HashMap<Player,Duel>();
 	public static Map<Player,ItemStack[]> itemStore = new HashMap<Player,ItemStack[]>();
     //ClassListeners
@@ -38,6 +39,8 @@ public class Duels extends JavaPlugin {
         pm.registerEvent(Event.Type.PLAYER_MOVE, playerListener, Event.Priority.Monitor, this);
         pm.registerEvent(Event.Type.PLAYER_KICK, playerListener, Event.Priority.Monitor, this);
         pm.registerEvent(Event.Type.PLAYER_QUIT, playerListener, Event.Priority.Monitor, this);
+        getServer().getPluginManager().registerEvent(Event.Type.PLUGIN_ENABLE, serverListener, Event.Priority.Monitor, this);
+        getServer().getPluginManager().registerEvent(Event.Type.PLUGIN_DISABLE, serverListener, Event.Priority.Monitor, this);
         PluginDescriptionFile pdfFile = this.getDescription();
     	log.info(pdfFile.getName() + " version " + pdfFile.getVersion() + " ENABLED");
 	}
@@ -71,7 +74,7 @@ public class Duels extends JavaPlugin {
 				player.sendMessage("set duel options with /duel set <option> <on/off>");
 				target.sendMessage("set duel options with /duel set <option> <on/off>");
 			}else{
-				duels.put(player, new Duel(player, target));
+				duels.put(player, new Duel(player, target, iConomy));
 				player.sendMessage("Duel request sent to " + target.getDisplayName() + ".");
 				target.sendMessage(player.getDisplayName() + " has requested to duel with you.");
 			}
@@ -121,6 +124,11 @@ public class Duels extends JavaPlugin {
 					}else if(value=="off"||value=="false"){
 						duel.setKeepItems(player, false);
 					}
+				}else if(key=="stake"||key=="wager"||key=="bet"){
+					if(this.iConomy!=null){
+						int newStake = Integer.parseInt(value);
+						duel.setStake(player, newStake);
+					}
 				}
 			}
 		}
@@ -128,3 +136,5 @@ public class Duels extends JavaPlugin {
 	}
 	
 }
+
+
