@@ -1,6 +1,6 @@
 name: Duels
 main: zonedabone.Duels.Duels
-version: 0.1 dev
+version: 0.0.1
 commands:
     duel:
         description: Used to duel people.
