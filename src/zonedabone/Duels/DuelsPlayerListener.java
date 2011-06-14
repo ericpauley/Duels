@@ -23,9 +23,11 @@ public class DuelsPlayerListener extends PlayerListener {
 
 	public void onPlayerMove(PlayerMoveEvent e){
 		Player player = e.getPlayer();
-		Duel[] duels = (Duel[]) Duels.duels.values().toArray();
+		Object[] duels = Duels.duels.values().toArray();
 		for(int i = 0;i<duels.length;i++){
-			duels[i].checkLocations(player);
+			if(duels[i] instanceof Duel){
+				((Duel)duels[i]).checkLocations(player);
+			}
 		}
 	}
 	

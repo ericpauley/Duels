@@ -124,7 +124,7 @@ public class Duels extends JavaPlugin {
 					}else if(value=="off"||value=="false"){
 						duel.setKeepItems(player, false);
 					}
-				}else if(key=="stake"||key=="wager"||key=="bet"){
+				}else if(key.equalsIgnoreCase("stake")){
 					if(this.iConomy!=null){
 						int newStake = Integer.parseInt(value);
 						duel.setStake(player, newStake);
