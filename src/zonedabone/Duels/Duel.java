@@ -50,5 +50,20 @@ public class Duel{
 		starter.sendMessage("The duel has been canceled!");
 		Duels.duels.remove(starter);
 	}
+	public void lose(Player player){
+		if(this.starterstage==2&&this.targetstage==2){
+			Player loser = player;
+			Player winner;
+			if(this.starter == player){
+				winner = this.target;
+			}else{
+				winner = this.starter;
+			}
+			loser.sendMessage("You lost the duel!");
+			winner.sendMessage("You won the duel!");
+			Duels.duels.remove(winner);
+			Duels.duels.remove(loser);
+		}
+	}
 	
 }

@@ -45,15 +45,7 @@ public class DuelsEntityListener extends EntityListener {
 			Player player = (Player) e.getEntity();
 			Duel duel = Duels.duels.get(player);
 			if(duel!=null){
-				if(duel.starter == player){
-					player.sendMessage("You lost the duel!");
-					duel.target.sendMessage("You won the duel!");
-				}else{
-					player.sendMessage("You lost the duel!");
-					duel.starter.sendMessage("You won the duel!");
-				}
-				Duels.duels.remove(player);
-				Duels.duels.remove(duel.target);
+				duel.lose(player);
 			}
 		}
 	}

@@ -93,6 +93,15 @@ public class Duels extends JavaPlugin {
 			}else{
 				duel.cancel();
 			}
+		}else if(subcommand.equalsIgnoreCase("surrender")){
+			Duel duel = duels.get(player);
+			if (duel==null){
+				player.sendMessage("You're not in a duel!");
+			}else if(duel.starterstage!=2||duel.targetstage!=2){
+				player.sendMessage("The duel has not started yet. Use '/duel cancel' instead.");
+			}else{
+				duel.lose(player);
+			}
 		}
 		return false;
 	}
