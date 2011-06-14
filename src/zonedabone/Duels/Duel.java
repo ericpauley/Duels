@@ -66,4 +66,20 @@ public class Duel{
 		}
 	}
 	
+	public void checkLocations(){
+		if(starter.getLocation().distance(duelLocation)>20){
+			if(starterstage<2&&targetstage<2){
+				this.cancel();
+			}else{
+				this.lose(starter);
+			}
+		}else if(starter.getLocation().distance(duelLocation)>20){
+			if(starterstage<2&&targetstage<2){
+				this.cancel();
+			}else{
+				this.lose(target);
+			}
+		}
+	}
+	
 }
