@@ -1,7 +1,6 @@
 package zonedabone.Duels;
 import java.util.HashMap;
 
-import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -11,13 +10,11 @@ public class Duel{
 	public Player target;
 	public int starterstage;
 	public int targetstage;
-	public Location duelLocation;
 	public boolean keepItems = true;
 	
 	public Duel(Player starter, Player target){
 		this.starter = starter;
 		this.target = target;
-		this.duelLocation = starter.getLocation();
 		starterstage = 1;
 		targetstage = 0;
 	}
@@ -88,18 +85,13 @@ public class Duel{
 		return false;
 	}
 	
-	public void checkLocations(){
-		if(starter.getLocation().distance(duelLocation)>20){
+	public void checkLocations(Player mover){
+		if(mover!=starter&&mover!=target){return;}
+		if(starter.getLocation().distance(target.getLocation())>20){
 			if(starterstage<2&&targetstage<2){
 				cancel();
 			}else{
-				lose(starter);
-			}
-		}else if(starter.getLocation().distance(duelLocation)>20){
-			if(starterstage<2&&targetstage<2){
-				cancel();
-			}else{
-				lose(target);
+				lose(mover);
 			}
 		}
 	}
