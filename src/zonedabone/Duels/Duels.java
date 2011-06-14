@@ -129,6 +129,12 @@ public class Duels extends JavaPlugin {
 						int newStake = Integer.parseInt(value);
 						duel.setStake(player, newStake);
 					}
+				}else if(key=="wolves"){
+					if(value=="on"||value=="true"){
+						duel.setWolves(player, true);
+					}else if(value=="off"||value=="false"){
+						duel.setWolves(player, false);
+					}
 				}
 			}
 		}

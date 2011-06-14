@@ -2,10 +2,12 @@ package zonedabone.Duels;
 
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Tameable;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityListener;
+import org.bukkit.event.entity.EntityTargetEvent;
 import org.bukkit.inventory.ItemStack;
 
 public class DuelsEntityListener extends EntityListener {
@@ -51,6 +53,17 @@ public class DuelsEntityListener extends EntityListener {
 				if(duel.lose(player)){
 					Duels.itemStore.put(player, drops);
 				}
+			}
+		}
+	}
+	
+	public void onEntityTarget(EntityTargetEvent e){
+		Entity entity = e.getEntity();
+		if(entity instanceof Tameable){
+			Player owner = (Player)(((Tameable)entity).getOwner());
+			Duel duel = Duels.duels.get(owner);
+			if(duel!=null && !duel.wolves){
+				e.setCancelled(true);
 			}
 		}
 	}
