@@ -1,0 +1,8 @@
+name: Duels
+main: zonedabone.Duels.Duels
+version: 0.1 dev
+commands:
+    duel:
+        description: Used to duel people.
+        usage: |
+            /<command> [arguments]
