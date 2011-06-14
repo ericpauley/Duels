@@ -1,6 +1,10 @@
 package zonedabone.Duels;
+import java.util.HashMap;
+
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
 
 public class Duel{
 	public Player starter;
@@ -8,6 +12,7 @@ public class Duel{
 	public int starterstage;
 	public int targetstage;
 	public Location duelLocation;
+	public boolean keepItems = true;
 	
 	public Duel(Player starter, Player target){
 		this.starter = starter;
@@ -50,7 +55,7 @@ public class Duel{
 		starter.sendMessage("The duel has been canceled!");
 		Duels.duels.remove(starter);
 	}
-	public void lose(Player player){
+	public boolean lose(Player player){
 		if(starterstage==2&&targetstage==2){
 			Player loser = player;
 			Player winner;
@@ -63,7 +68,23 @@ public class Duel{
 			winner.sendMessage("You won the duel!");
 			Duels.duels.remove(winner);
 			Duels.duels.remove(loser);
+			if(!keepItems){
+				Inventory loserInv = loser.getInventory();
+				Inventory winnerInv = winner.getInventory();
+				ItemStack[] transfer = loserInv.getContents();
+				for(int i = 0;i<transfer.length;i++){
+					HashMap<Integer,ItemStack> left = winnerInv.addItem(transfer[i]);
+					if(!left.isEmpty()){
+						ItemStack[] drop = (ItemStack[]) left.values().toArray();
+						winner.getWorld().dropItemNaturally(winner.getLocation(), drop[0]);
+					}
+				}
+				return false;
+			}else{
+				return true;
+			}
 		}
+		return false;
 	}
 	
 	public void checkLocations(){
@@ -87,6 +108,18 @@ public class Duel{
 			cancel();
 		}else{
 			lose(player);
+		}
+	}
+	
+	public void setKeepItems(Player player, boolean value){
+		if(value==keepItems){return;}
+		keepItems = value;
+		if(value){
+			starter.sendMessage("You will keep your items if you lose.");
+			target.sendMessage("You will keep your items if you lose.");
+		}else{
+			starter.sendMessage("Your opponent will get your items if you lose.");
+			target.sendMessage("Your opponent will get your items if you lose.");
 		}
 	}
 	

@@ -6,6 +6,7 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityListener;
+import org.bukkit.inventory.ItemStack;
 
 public class DuelsEntityListener extends EntityListener {
 	
@@ -44,8 +45,12 @@ public class DuelsEntityListener extends EntityListener {
 		if(e.getEntity() instanceof Player){
 			Player player = (Player) e.getEntity();
 			Duel duel = Duels.duels.get(player);
-			if(duel!=null){
-				duel.lose(player);
+			if(duel!=null&&(duel.starterstage==2&&duel.targetstage==2)){
+				ItemStack[] drops = (ItemStack[]) e.getDrops().toArray();
+				e.getDrops().clear();
+				if(duel.lose(player)){
+					Duels.itemStore.put(player, drops);
+				}
 			}
 		}
 	}

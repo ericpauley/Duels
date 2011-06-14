@@ -6,6 +6,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import java.util.HashMap;
@@ -19,6 +20,7 @@ public class Duels extends JavaPlugin {
 	private final DuelsEntityListener entityListener = new DuelsEntityListener(this);
 	private final DuelsPlayerListener playerListener = new DuelsPlayerListener(this);
 	public static Map<Player,Duel> duels = new HashMap<Player,Duel>();
+	public static Map<Player,ItemStack[]> itemStore = new HashMap<Player,ItemStack[]>();
     //ClassListeners
 	
 	Logger log = Logger.getLogger("Minecraft");//Define your logger
@@ -51,11 +53,8 @@ public class Duels extends JavaPlugin {
 		String subcommand = args[0];
 		if(subcommand.equalsIgnoreCase("challenge")){
 			Player target;
-			try{
-				target = player.getServer().getPlayer(args[1]);
-			}catch (IndexOutOfBoundsException e){
-				return false;
-			}
+			if(args.length<2){return false;}
+			target = player.getServer().getPlayer(args[1]);
 			if(duels.get(player)!=null){
 				sender.sendMessage("You are currently in a duel!");
 			}else if(player==target){
@@ -106,8 +105,26 @@ public class Duels extends JavaPlugin {
 			}else{
 				duel.lose(player);
 			}
+		}else if(subcommand.equalsIgnoreCase("set")){
+			if(args.length<4){return false;}
+			Duel duel = duels.get(player);
+			if (duel==null){
+				player.sendMessage("You're not in a duel!");
+			}else if(duel.starterstage!=1||duel.targetstage!=1){
+				player.sendMessage("Now is not the time to change duel settings.");
+			}else{
+				String key = args[2];
+				String value = args[3];
+				if(key=="keepitems"){
+					if(value=="on"||value=="true"){
+						duel.setKeepItems(player, true);
+					}else if(value=="off"||value=="false"){
+						duel.setKeepItems(player, false);
+					}
+				}
+			}
 		}
-		return false;
+		return true;
 	}
 	
 }
