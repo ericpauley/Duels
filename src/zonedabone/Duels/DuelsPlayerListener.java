@@ -1,11 +1,13 @@
 package zonedabone.Duels;
 
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.event.block.Action;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerListener;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.ItemStack;
 
 /* Duels Template
@@ -54,18 +56,25 @@ public class DuelsPlayerListener extends PlayerListener {
 		}
 	}
 	
-	public void onPlayerRespawn(final PlayerRespawnEvent e){
-		final ItemStack[] restore = Duels.itemStore.get(e.getPlayer());
-		Duels.itemStore.remove(e.getPlayer());
-		if(restore!=null){
-			plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
-			    public void run() {
-			    	for(int i =0;i<restore.length;i++){
-						e.getPlayer().getInventory().addItem(restore[i]);
-					}
-			    }
-			}, 60L);
+	public void onPlayerInteract(PlayerInteractEvent e){
+		Material type = e.getItem().getType();
+		Duel duel = Duels.duels.get(e.getPlayer());
+		if(duel!=null&&duel.targetstage==2&&duel.starterstage==2&&!duel.food){
+			if(e.getAction()==Action.RIGHT_CLICK_AIR||e.getAction()==Action.RIGHT_CLICK_BLOCK){
+				if(type==Material.PORK||
+						type==Material.GRILLED_PORK||
+						type==Material.COOKED_FISH||
+						type==Material.RAW_FISH||
+						type==Material.COOKIE||
+						type==Material.BREAD||
+						type==Material.MUSHROOM_SOUP||
+						type==Material.GOLDEN_APPLE||
+						type==Material.APPLE||
+						e.getClickedBlock().getType()==Material.CAKE_BLOCK){
+					e.getPlayer().sendMessage("Food is disabled in this duel!");
+					e.setCancelled(true);
+				}
+			}
 		}
 	}
-
 }

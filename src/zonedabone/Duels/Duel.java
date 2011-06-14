@@ -17,6 +17,7 @@ public class Duel{
 	int targetStake = 0;
 	iConomy iconomy;
 	boolean wolves = true;
+	boolean food = true;
 	
 	public Duel(Player starter, Player target, iConomy iConomy){
 		this.starter = starter;
@@ -165,6 +166,19 @@ public class Duel{
 			}else{
 				starter.sendMessage(player.getDisplayName() + " disabled wolves.");
 				target.sendMessage(player.getDisplayName() + " disabled wolves.");
+			}
+		}
+	}
+	
+	public void setFood(Player player, boolean value){
+		if(value!=food){
+			food = value;
+			if(food){
+				starter.sendMessage(player.getDisplayName() + " enabled food.");
+				target.sendMessage(player.getDisplayName() + " enabled food.");
+			}else{
+				starter.sendMessage(player.getDisplayName() + " disabled food.");
+				target.sendMessage(player.getDisplayName() + " disabled food.");
 			}
 		}
 	}

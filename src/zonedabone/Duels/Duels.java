@@ -136,6 +136,12 @@ public class Duels extends JavaPlugin {
 					}else if(value=="off"||value=="false"){
 						duel.setWolves(player, false);
 					}
+				}else if(key.equalsIgnoreCase("food")){
+					if(value=="on"||value=="true"){
+						duel.setFood(player, true);
+					}else if(value=="off"||value=="false"){
+						duel.setFood(player, false);
+					}
 				}
 			}
 		}
