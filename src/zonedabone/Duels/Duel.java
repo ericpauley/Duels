@@ -72,6 +72,7 @@ public class Duel{
 				Inventory loserInv = loser.getInventory();
 				Inventory winnerInv = winner.getInventory();
 				ItemStack[] transfer = loserInv.getContents();
+				loserInv.clear();
 				for(int i = 0;i<transfer.length;i++){
 					HashMap<Integer,ItemStack> left = winnerInv.addItem(transfer[i]);
 					if(!left.isEmpty()){
