@@ -109,16 +109,16 @@ public class Duels extends JavaPlugin {
 				duel.lose(player);
 			}
 		}else if(subcommand.equalsIgnoreCase("set")){
-			if(args.length<4){return false;}
+			if(args.length<3){return false;}
 			Duel duel = duels.get(player);
 			if (duel==null){
 				player.sendMessage("You're not in a duel!");
 			}else if(duel.starterstage!=1||duel.targetstage!=1){
 				player.sendMessage("Now is not the time to change duel settings.");
 			}else{
-				String key = args[2];
-				String value = args[3];
-				if(key=="keepitems"){
+				String key = args[1];
+				String value = args[2];
+				if(key.equalsIgnoreCase("keepitems")){
 					if(value=="on"||value=="true"){
 						duel.setKeepItems(player, true);
 					}else if(value=="off"||value=="false"){
@@ -129,7 +129,7 @@ public class Duels extends JavaPlugin {
 						int newStake = Integer.parseInt(value);
 						duel.setStake(player, newStake);
 					}
-				}else if(key=="wolves"){
+				}else if(key.equalsIgnoreCase("wolves")){
 					if(value=="on"||value=="true"){
 						duel.setWolves(player, true);
 					}else if(value=="off"||value=="false"){

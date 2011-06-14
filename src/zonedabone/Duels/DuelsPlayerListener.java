@@ -47,12 +47,17 @@ public class DuelsPlayerListener extends PlayerListener {
 		}
 	}
 	
-	public void onPlayerRespawn(PlayerRespawnEvent e){
-		ItemStack[] restore = Duels.itemStore.get(e.getPlayer());
+	public void onPlayerRespawn(final PlayerRespawnEvent e){
+		final ItemStack[] restore = Duels.itemStore.get(e.getPlayer());
+		Duels.itemStore.remove(e.getPlayer());
 		if(restore!=null){
-			for(int i =0;i<restore.length;i++){
-				e.getPlayer().getInventory().addItem(restore[i]);
-			}
+			plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+			    public void run() {
+			    	for(int i =0;i<restore.length;i++){
+						e.getPlayer().getInventory().addItem(restore[i]);
+					}
+			    }
+			}, 60L);
 		}
 	}
 

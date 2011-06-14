@@ -96,8 +96,9 @@ public class Duel{
 			}else{
 				return true;
 			}
+		}else{
+			return false;
 		}
-		return false;
 	}
 	
 	public void checkLocations(Player mover){
