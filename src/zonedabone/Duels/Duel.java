@@ -51,13 +51,13 @@ public class Duel{
 		Duels.duels.remove(starter);
 	}
 	public void lose(Player player){
-		if(this.starterstage==2&&this.targetstage==2){
+		if(starterstage==2&&targetstage==2){
 			Player loser = player;
 			Player winner;
-			if(this.starter == player){
-				winner = this.target;
+			if(starter == player){
+				winner = target;
 			}else{
-				winner = this.starter;
+				winner = starter;
 			}
 			loser.sendMessage("You lost the duel!");
 			winner.sendMessage("You won the duel!");
@@ -69,16 +69,24 @@ public class Duel{
 	public void checkLocations(){
 		if(starter.getLocation().distance(duelLocation)>20){
 			if(starterstage<2&&targetstage<2){
-				this.cancel();
+				cancel();
 			}else{
-				this.lose(starter);
+				lose(starter);
 			}
 		}else if(starter.getLocation().distance(duelLocation)>20){
 			if(starterstage<2&&targetstage<2){
-				this.cancel();
+				cancel();
 			}else{
-				this.lose(target);
+				lose(target);
 			}
+		}
+	}
+	
+	public void disconnect(Player player){
+		if(starterstage<2&&targetstage<2){
+			cancel();
+		}else{
+			lose(player);
 		}
 	}
 	

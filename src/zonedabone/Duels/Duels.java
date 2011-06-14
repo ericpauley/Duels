@@ -17,6 +17,7 @@ public class Duels extends JavaPlugin {
 
     //ClassListeners
 	private final DuelsEntityListener entityListener = new DuelsEntityListener(this);
+	private final DuelsPlayerListener playerListener = new DuelsPlayerListener(this);
 	public static Map<Player,Duel> duels = new HashMap<Player,Duel>();
     //ClassListeners
 	
@@ -32,6 +33,9 @@ public class Duels extends JavaPlugin {
 	public void onEnable() {
         PluginManager pm = this.getServer().getPluginManager();
         pm.registerEvent(Event.Type.ENTITY_DAMAGE, entityListener, Event.Priority.Normal, this);
+        pm.registerEvent(Event.Type.PLAYER_MOVE, playerListener, Event.Priority.Monitor, this);
+        pm.registerEvent(Event.Type.PLAYER_KICK, playerListener, Event.Priority.Monitor, this);
+        pm.registerEvent(Event.Type.PLAYER_QUIT, playerListener, Event.Priority.Monitor, this);
         PluginDescriptionFile pdfFile = this.getDescription();
     	log.info(pdfFile.getName() + " version " + pdfFile.getVersion() + " ENABLED");
 	}
