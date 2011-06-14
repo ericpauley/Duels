@@ -22,6 +22,7 @@ public class Duels extends JavaPlugin {
 	private final DuelsServerListener serverListener = new DuelsServerListener(this);
 	public static Map<Player,Duel> duels = new HashMap<Player,Duel>();
 	public static Map<Player,ItemStack[]> itemStore = new HashMap<Player,ItemStack[]>();
+	public static Map<Player,ItemStack[]> armorStore = new HashMap<Player,ItemStack[]>();
     //ClassListeners
 	
 	Logger log = Logger.getLogger("Minecraft");//Define your logger

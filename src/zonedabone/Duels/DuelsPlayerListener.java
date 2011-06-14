@@ -29,6 +29,13 @@ public class DuelsPlayerListener extends PlayerListener {
 				((Duel)duels[i]).checkLocations(player);
 			}
 		}
+		ItemStack[] items = Duels.itemStore.get(e.getPlayer());
+		ItemStack[] armor = Duels.itemStore.get(e.getPlayer());
+		Duels.itemStore.remove(e.getPlayer());
+		if(items!=null||armor!=null){
+			e.getPlayer().getInventory().setContents(items);
+			e.getPlayer().getInventory().setArmorContents(armor);
+		}
 	}
 	
 	public void onPlayerKick(PlayerKickEvent e){
