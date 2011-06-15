@@ -10,11 +10,6 @@ import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
 
-/* Duels Template
- * By Adamki11s
- * HUGE Plugin Tutorial
- */
-
 public class DuelsPlayerListener extends PlayerListener {
 	
 	public static Duels plugin;

@@ -1,4 +1,4 @@
-package zonedabone.Duels; //Your package
+package zonedabone.Duels;
 
 import java.util.logging.Logger;
 import org.bukkit.command.Command;
@@ -12,6 +12,8 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.util.HashMap;
 import java.util.Map;
 import org.bukkit.plugin.PluginDescriptionFile;
+import org.bukkit.util.config.Configuration;
+
 import com.iConomy.*;
 
 public class Duels extends JavaPlugin {
@@ -20,35 +22,73 @@ public class Duels extends JavaPlugin {
 	private final DuelsEntityListener entityListener = new DuelsEntityListener(this);
 	private final DuelsPlayerListener playerListener = new DuelsPlayerListener(this);
 	private final DuelsServerListener serverListener = new DuelsServerListener(this);
+    //ClassListeners
+	
+	//Data storage via HashMaps
 	public static Map<Player,Duel> duels = new HashMap<Player,Duel>();
 	public static Map<Player,ItemStack[]> itemStore = new HashMap<Player,ItemStack[]>();
 	public static Map<Player,ItemStack[]> armorStore = new HashMap<Player,ItemStack[]>();
-    //ClassListeners
+	////Data storage via HashMaps
 	
-	Logger log = Logger.getLogger("Minecraft");//Define your logger
-
+	Logger log = Logger.getLogger("Minecraft");
+	
+	//Configuration memory storage
+	public static int MAX_DISTANCE = 20;
+	public static Map<String,String> messages = new HashMap<String,String>();
+	//Configuration memory storage
 
 	public void onDisable() {
-        PluginDescriptionFile pdfFile = this.getDescription();
-    	log.info(pdfFile.getName() + " version " + pdfFile.getVersion() + " DISABLED");
-
+		PluginDescriptionFile pdf = this.getDescription();
+    	log.info(pdf.getName() + " version " + pdf.getVersion() + " DISABLED");
 	}
 
 	public void onEnable() {
+		PluginDescriptionFile pdf = this.getDescription();
         PluginManager pm = this.getServer().getPluginManager();
-        pm.registerEvent(Event.Type.ENTITY_DAMAGE, entityListener, Event.Priority.Normal, this);
-        pm.registerEvent(Event.Type.PLAYER_MOVE, playerListener, Event.Priority.Monitor, this);
-        pm.registerEvent(Event.Type.PLAYER_KICK, playerListener, Event.Priority.Monitor, this);
-        pm.registerEvent(Event.Type.PLAYER_QUIT, playerListener, Event.Priority.Monitor, this);
-        getServer().getPluginManager().registerEvent(Event.Type.PLUGIN_ENABLE, serverListener, Event.Priority.Monitor, this);
-        getServer().getPluginManager().registerEvent(Event.Type.PLUGIN_DISABLE, serverListener, Event.Priority.Monitor, this);
-        PluginDescriptionFile pdfFile = this.getDescription();
-    	log.info(pdfFile.getName() + " version " + pdfFile.getVersion() + " ENABLED");
+        
+        //Set configuration values
+        Configuration config = getConfiguration();
+        //Max distance between players.
+    	MAX_DISTANCE = config.getInt("maxdistance", 20);
+    	config.setProperty("maxdistance",MAX_DISTANCE);
+    	//Message if sent from console
+    	messages.put("CLIENT_ONLY", config.getString("messages.clientonly", "Duels can only be used from the client."));
+    	config.setProperty("messages.clientonly", messages.get("CLIENT_ONLY"));
+    	//Message if already in a duel
+    	messages.put("ALREADY_DUELING", config.getString("messages.alreadydueling", "You are currently in a duel!"));
+    	config.setProperty("messages.alreadydueling", messages.get("ALREADY_DUELING"));
+    	//Message if not in a duel
+    	messages.put("NOT_DUELING", config.getString("messages.notdueling", "You're not in a duel!"));
+    	config.setProperty("messages.notdueling", messages.get("NOT_DUELING"));
+    	//Message if player tries to duel self
+    	messages.put("CANT_DUEL_SELF", config.getString("messages.cantduelself", "You can't duel yourself!"));
+    	config.setProperty("messages.cantduelself", messages.get("CANT_DUEL_SELF"));
+    	//Message if target is offline
+    	messages.put("PLAYER_OFFLINE", config.getString("messages.playeroffline", "{PLAYER} is offline."));
+    	config.setProperty("messages.playeroffline", messages.get("PLAYER_OFFLINE"));
+    	config.save();
+        //Set configuration values
+        
+        
+        //Register Events
+        pm.registerEvent(Event.Type.ENTITY_DAMAGE,  entityListener, Event.Priority.Normal,  this);
+        pm.registerEvent(Event.Type.PLAYER_MOVE,    playerListener, Event.Priority.Monitor, this);
+        pm.registerEvent(Event.Type.PLAYER_KICK,    playerListener, Event.Priority.Monitor, this);
+        pm.registerEvent(Event.Type.PLAYER_QUIT,    playerListener, Event.Priority.Monitor, this);
+        pm.registerEvent(Event.Type.PLUGIN_ENABLE,  serverListener, Event.Priority.Monitor, this);
+        pm.registerEvent(Event.Type.PLUGIN_DISABLE, serverListener, Event.Priority.Monitor, this);
+        //Register Events
+        
+    	log.info(pdf.getName() + " version " + pdf.getVersion() + " ENABLED");
+	}
+	
+	public static String getMessage(String msg){
+		return MessageParser.parseMessage(messages.get(msg));
 	}
 	
 	public boolean onCommand(CommandSender sender, Command command, String label, String[] args){
 		if(sender instanceof ConsoleCommandSender){
-			sender.sendMessage("Duels can only be used from the client.");
+			sender.sendMessage(getMessage("CLIENT_ONLY"));
 			return true;
 		}
 		if(!command.getName().equalsIgnoreCase("duel")){return false;}
@@ -56,22 +96,21 @@ public class Duels extends JavaPlugin {
 		Player player = (Player) sender;
 		String subcommand = args[0];
 		if(subcommand.equalsIgnoreCase("challenge")){
-			Player target;
 			if(args.length<2){return false;}
-			target = player.getServer().getPlayer(args[1]);
+			Player target = player.getServer().getPlayer(args[1]);
 			if(duels.get(player)!=null){
-				sender.sendMessage("You are currently in a duel!");
+				sender.sendMessage(getMessage("ALREADY_DUELING"));
 			}else if(player==target){
-				sender.sendMessage("You can't duel yourself!");
+				sender.sendMessage(getMessage("CANT_DUEL_SELF"));
 			}else if(target==null||!target.isOnline()){
-				sender.sendMessage(args[1] + "is offline.");
-			}else if(player.getLocation().distance(target.getLocation())>10){
-				player.sendMessage(target.getDisplayName() + "is not in range. (10 blocks)");
+				sender.sendMessage(MessageParser.parseMessage(messages.get("PLAYER_OFFLINE"),"{PLAYER}",args[1]));
+			}else if(player.getLocation().distance(target.getLocation())>MAX_DISTANCE){
+				player.sendMessage(target.getDisplayName() + "is not in range.");
 			}else if(duels.get(target)!=null && duels.get(target).target == player){
 				duels.put(player, duels.get(target));
 				duels.get(target).accept();
-				sender.sendMessage("Accepted " + target.getDisplayName() + "'s duel.");
-				player.sendMessage(player.getDisplayName() + " has accepted your duel request.");
+				player.sendMessage("Accepted " + target.getDisplayName() + "'s duel.");
+				target.sendMessage(player.getDisplayName() + " has accepted your duel request.");
 				player.sendMessage("set duel options with /duel set <option> <on/off>");
 				target.sendMessage("set duel options with /duel set <option> <on/off>");
 			}else{
@@ -94,7 +133,7 @@ public class Duels extends JavaPlugin {
 		}else if(subcommand.equalsIgnoreCase("cancel")){
 			Duel duel = duels.get(player);
 			if (duel == null){
-				player.sendMessage("You're not in a duel!");
+				player.sendMessage(getMessage("NOT_DUELING"));
 			}else if(duel.targetstage == 2 && duel.starterstage == 2){
 				player.sendMessage("You can't cancel a duel in progress! Use '/duel surrender' instead.");
 			}else{
@@ -103,7 +142,7 @@ public class Duels extends JavaPlugin {
 		}else if(subcommand.equalsIgnoreCase("surrender")){
 			Duel duel = duels.get(player);
 			if (duel==null){
-				player.sendMessage("You're not in a duel!");
+				player.sendMessage(getMessage("NOT_DUELING"));
 			}else if(duel.starterstage!=2||duel.targetstage!=2){
 				player.sendMessage("The duel has not started yet. Use '/duel cancel' instead.");
 			}else{
@@ -113,7 +152,7 @@ public class Duels extends JavaPlugin {
 			if(args.length<3){return false;}
 			Duel duel = duels.get(player);
 			if (duel==null){
-				player.sendMessage("You're not in a duel!");
+				player.sendMessage(getMessage("NOT_DUELING"));
 			}else if(duel.starterstage!=1||duel.targetstage!=1){
 				player.sendMessage("Now is not the time to change duel settings.");
 			}else{

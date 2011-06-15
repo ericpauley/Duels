@@ -98,13 +98,14 @@ public class Duel{
 				return true;
 			}
 		}else{
+			cancel();
 			return false;
 		}
 	}
 	
 	public void checkLocations(Player mover){
 		if(mover!=starter&&mover!=target){return;}
-		if(starter.getLocation().distance(target.getLocation())>20){
+		if(starter.getLocation().distance(target.getLocation())>Duels.MAX_DISTANCE){
 			if(starterstage<2&&targetstage<2){
 				cancel();
 			}else{
