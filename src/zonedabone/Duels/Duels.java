@@ -36,6 +36,8 @@ public class Duels extends JavaPlugin {
 	public static int MAX_DISTANCE = 20;
 	public static boolean FORCE_PVP = true;
 	public static boolean USE_ICONOMY = true;
+	public static boolean FORCE_FIELD_DURING = true;
+	public static boolean FORCE_FIELD_BEFORE = true;
 	public static Map<String,String> messages = new HashMap<String,String>();
 	//Configuration memory storage
 
@@ -53,12 +55,18 @@ public class Duels extends JavaPlugin {
         //Max distance between players.
     	MAX_DISTANCE = config.getInt("maxdistance", 20);
     	config.setProperty("maxdistance",MAX_DISTANCE);
+    	//Max distance between players during the duel. (Instead of surrender)
+    	FORCE_FIELD_DURING = config.getBoolean("forcefeild.during", true);
+    	config.setProperty("forcefeild.during",FORCE_FIELD_DURING);
+    	//Max distance between players while preparing the duel. (Instead of cancel)
+    	FORCE_FIELD_BEFORE = config.getBoolean("forcefeild.before", true);
+    	config.setProperty("forcefeild.before",FORCE_FIELD_BEFORE);
     	//Whether or not to override other pvp plugins during duels
     	FORCE_PVP = config.getBoolean("forcepvp", true);
     	config.setProperty("forcepvp",FORCE_PVP);
     	//Whether or not to use iConomy
-    	FORCE_PVP = config.getBoolean("forcepvp", true);
-    	config.setProperty("forcepvp",FORCE_PVP);
+    	USE_ICONOMY = config.getBoolean("useiconomy", true);
+    	config.setProperty("useiconomy",USE_ICONOMY);
     	//Message if sent from console
     	messages.put("CLIENT_ONLY", config.getString("messages.clientonly", "Duels can only be used from the client."));
     	config.setProperty("messages.clientonly", messages.get("CLIENT_ONLY"));
@@ -92,7 +100,7 @@ public class Duels extends JavaPlugin {
         
         //Register Events
         pm.registerEvent(Event.Type.ENTITY_DAMAGE,  entityListener, Event.Priority.Highest,  this);
-        pm.registerEvent(Event.Type.PLAYER_MOVE,    playerListener, Event.Priority.Monitor, this);
+        pm.registerEvent(Event.Type.PLAYER_MOVE,    playerListener, Event.Priority.Highest, this);
         pm.registerEvent(Event.Type.PLAYER_KICK,    playerListener, Event.Priority.Monitor, this);
         pm.registerEvent(Event.Type.PLAYER_QUIT,    playerListener, Event.Priority.Monitor, this);
         if(USE_ICONOMY){

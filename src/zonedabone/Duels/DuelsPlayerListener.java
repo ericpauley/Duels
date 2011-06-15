@@ -23,12 +23,13 @@ public class DuelsPlayerListener extends PlayerListener {
 		Object[] duels = Duels.duels.values().toArray();
 		for(int i = 0;i<duels.length;i++){
 			if(duels[i] instanceof Duel){
-				((Duel)duels[i]).checkLocations(player);
+				((Duel)duels[i]).checkLocations(player, e);
 			}
 		}
 		ItemStack[] items = Duels.itemStore.get(e.getPlayer());
-		ItemStack[] armor = Duels.itemStore.get(e.getPlayer());
+		ItemStack[] armor = Duels.armorStore.get(e.getPlayer());
 		Duels.itemStore.remove(e.getPlayer());
+		Duels.armorStore.remove(e.getPlayer());
 		if(items!=null||armor!=null){
 			e.getPlayer().getInventory().setContents(items);
 			e.getPlayer().getInventory().setArmorContents(armor);

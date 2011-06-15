@@ -2,6 +2,7 @@ package zonedabone.Duels;
 import java.util.HashMap;
 
 import org.bukkit.entity.Player;
+import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import com.iConomy.*;
@@ -77,8 +78,10 @@ public class Duel{
 			}
 			loser.sendMessage("You lost the duel!");
 			winner.sendMessage("You won the duel!");
-			Holdings winnerBalance = iConomy.getAccount(winner.getDisplayName()).getHoldings();
-			winnerBalance.add(starterStake+targetStake);
+			if(this.iconomy!=null){
+				Holdings winnerBalance = iConomy.getAccount(winner.getDisplayName()).getHoldings();
+				winnerBalance.add(starterStake+targetStake);
+			}
 			Duels.duels.remove(winner);
 			Duels.duels.remove(loser);
 			if(!keepItems){
@@ -103,13 +106,23 @@ public class Duel{
 		}
 	}
 	
-	public void checkLocations(Player mover){
+	public void checkLocations(Player mover, PlayerMoveEvent e){
 		if(mover!=starter&&mover!=target){return;}
 		if(starter.getLocation().distance(target.getLocation())>Duels.MAX_DISTANCE){
-			if(starterstage<2&&targetstage<2){
-				cancel();
+			if(starterstage==1&&targetstage==1){
+				if(Duels.FORCE_FIELD_BEFORE){
+					e.setCancelled(true);
+				}else{
+					cancel();
+				}
+			}else if (starterstage==2&&targetstage==2){
+				if(Duels.FORCE_FIELD_DURING){
+					e.setCancelled(true);
+				}else{
+					lose(mover);
+				}
 			}else{
-				lose(mover);
+				cancel();
 			}
 		}
 	}
