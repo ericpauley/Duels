@@ -35,6 +35,7 @@ public class Duels extends JavaPlugin {
 	//Configuration memory storage
 	public static int MAX_DISTANCE = 20;
 	public static boolean FORCE_PVP = true;
+	public static boolean USE_ICONOMY = true;
 	public static Map<String,String> messages = new HashMap<String,String>();
 	//Configuration memory storage
 
@@ -55,6 +56,9 @@ public class Duels extends JavaPlugin {
     	//Whether or not to override other pvp plugins during duels
     	FORCE_PVP = config.getBoolean("forcepvp", true);
     	config.setProperty("forcepvp",FORCE_PVP);
+    	//Whether or not to use iConomy
+    	FORCE_PVP = config.getBoolean("forcepvp", true);
+    	config.setProperty("forcepvp",FORCE_PVP);
     	//Message if sent from console
     	messages.put("CLIENT_ONLY", config.getString("messages.clientonly", "Duels can only be used from the client."));
     	config.setProperty("messages.clientonly", messages.get("CLIENT_ONLY"));
@@ -70,6 +74,18 @@ public class Duels extends JavaPlugin {
     	//Message if target is offline
     	messages.put("PLAYER_OFFLINE", config.getString("messages.playeroffline", "{PLAYER} is offline."));
     	config.setProperty("messages.playeroffline", messages.get("PLAYER_OFFLINE"));
+    	//Message if target is not within range
+    	messages.put("NOT_IN_RANGE", config.getString("messages.notinrange", "{PLAYER} is not in range. ({RANGE} blocks)"));
+    	config.setProperty("messages.notinrange", messages.get("NOT_IN_RANGE"));
+    	//Message when player accepts an incoming duel request.
+    	messages.put("SELF_ACCEPT", config.getString("messages.selfaccept", "Accepted {PLAYER}'s duel."));
+    	config.setProperty("messages.selfaccept", messages.get("SELF_ACCEPT"));
+    	//Message when target accepts the duel request
+    	messages.put("OTHER_ACCEPT", config.getString("messages.otheraccept", "{PLAYER} has accepted your duel request."));
+    	config.setProperty("messages.otheraccept", messages.get("OTHER_ACCEPT"));
+    	//Message sent to both players when config mode is entered
+    	messages.put("CONFIG", config.getString("messages.config", "set duel options with /duel set <option> <on/off>"));
+    	config.setProperty("messages.config", messages.get("CONFIG"));
     	config.save();
         //Set configuration values
         
@@ -79,8 +95,10 @@ public class Duels extends JavaPlugin {
         pm.registerEvent(Event.Type.PLAYER_MOVE,    playerListener, Event.Priority.Monitor, this);
         pm.registerEvent(Event.Type.PLAYER_KICK,    playerListener, Event.Priority.Monitor, this);
         pm.registerEvent(Event.Type.PLAYER_QUIT,    playerListener, Event.Priority.Monitor, this);
-        pm.registerEvent(Event.Type.PLUGIN_ENABLE,  serverListener, Event.Priority.Monitor, this);
-        pm.registerEvent(Event.Type.PLUGIN_DISABLE, serverListener, Event.Priority.Monitor, this);
+        if(USE_ICONOMY){
+	        pm.registerEvent(Event.Type.PLUGIN_ENABLE,  serverListener, Event.Priority.Monitor, this);
+	        pm.registerEvent(Event.Type.PLUGIN_DISABLE, serverListener, Event.Priority.Monitor, this);
+        }
         //Register Events
         
     	log.info(pdf.getName() + " version " + pdf.getVersion() + " ENABLED");
@@ -108,14 +126,14 @@ public class Duels extends JavaPlugin {
 			}else if(target==null||!target.isOnline()){
 				sender.sendMessage(MessageParser.parseMessage(messages.get("PLAYER_OFFLINE"),"{PLAYER}",args[1]));
 			}else if(player.getLocation().distance(target.getLocation())>MAX_DISTANCE){
-				player.sendMessage(target.getDisplayName() + "is not in range.");
+				player.sendMessage(MessageParser.parseMessage(messages.get("NOT_IN_RANGE"),"{PLAYER}",target.getDisplayName(),"{RANGE}", Integer.toString(MAX_DISTANCE)));
 			}else if(duels.get(target)!=null && duels.get(target).target == player){
 				duels.put(player, duels.get(target));
 				duels.get(target).accept();
-				player.sendMessage("Accepted " + target.getDisplayName() + "'s duel.");
-				target.sendMessage(player.getDisplayName() + " has accepted your duel request.");
-				player.sendMessage("set duel options with /duel set <option> <on/off>");
-				target.sendMessage("set duel options with /duel set <option> <on/off>");
+				player.sendMessage(MessageParser.parseMessage(messages.get("SELF_ACCEPT"),"{PLAYER}",target.getDisplayName()));
+				target.sendMessage(MessageParser.parseMessage(messages.get("OTHER_ACCEPT"),"{PLAYER}",target.getDisplayName()));
+				player.sendMessage(getMessage("CONFIG"));
+				target.sendMessage(getMessage("CONFIG"));
 			}else{
 				duels.put(player, new Duel(player, target, iConomy));
 				player.sendMessage("Duel request sent to " + target.getDisplayName() + ".");

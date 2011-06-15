@@ -20,7 +20,7 @@ public class MessageParser {
 	}
 	public static String parseMessage(String message, Map<String,String> repl){
 		message = message.replace('&', '§');
-		String[] torepl = (String[]) repl.keySet().toArray();
+		String[] torepl = repl.keySet().toArray(new String[0]);
 		for(int i = 0;i<torepl.length;i++){
 			message = message.replace(torepl[i], repl.get(torepl[i]));
 		}
