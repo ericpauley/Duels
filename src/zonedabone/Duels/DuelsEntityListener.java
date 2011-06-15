@@ -52,7 +52,7 @@ public class DuelsEntityListener extends EntityListener {
 			Duel duel = Duels.duels.get(player);
 			if(duel!=null){
 				int result = duel.lose(player);
-				ItemStack[] items;;
+				ItemStack[] items;
 				ItemStack[] armor;
 				if(result!=0){
 					items = player.getInventory().getContents();

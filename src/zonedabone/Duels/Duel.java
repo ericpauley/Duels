@@ -1,6 +1,7 @@
 package zonedabone.Duels;
 import java.util.HashMap;
 
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.inventory.Inventory;
@@ -108,7 +109,14 @@ public class Duel{
 	
 	public void checkLocations(Player mover, PlayerMoveEvent e){
 		if(mover!=starter&&mover!=target){return;}
-		if(starter.getLocation().distance(target.getLocation())>Duels.MAX_DISTANCE){
+		Location newLoc = e.getTo();
+		Location otherLoc;
+		if(mover == starter){
+			otherLoc=target.getLocation();
+		}else{
+			otherLoc=starter.getLocation();
+		}
+		if(otherLoc.distance(newLoc)>Duels.MAX_DISTANCE){
 			if(starterstage==1&&targetstage==1){
 				if(Duels.FORCE_FIELD_BEFORE){
 					e.setCancelled(true);

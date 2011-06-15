@@ -119,6 +119,7 @@ public class Duels extends JavaPlugin {
         
         //Register Events
         pm.registerEvent(Event.Type.ENTITY_DAMAGE,  entityListener, Event.Priority.Highest,  this);
+        pm.registerEvent(Event.Type.ENTITY_DEATH,  entityListener, Event.Priority.Highest,  this);
         pm.registerEvent(Event.Type.PLAYER_MOVE,    playerListener, Event.Priority.Highest, this);
         pm.registerEvent(Event.Type.PLAYER_KICK,    playerListener, Event.Priority.Monitor, this);
         pm.registerEvent(Event.Type.PLAYER_QUIT,    playerListener, Event.Priority.Monitor, this);
