@@ -38,6 +38,7 @@ public class Duels extends JavaPlugin {
 	public static boolean USE_ICONOMY = true;
 	public static boolean FORCE_FIELD_DURING = true;
 	public static boolean FORCE_FIELD_BEFORE = true;
+	public static String MESSAGE_PREFIX = "&4[DUELS]&f";
 	public static Map<String,String> messages = new HashMap<String,String>();
 	//Configuration memory storage
 
@@ -67,6 +68,9 @@ public class Duels extends JavaPlugin {
     	//Whether or not to use iConomy
     	USE_ICONOMY = config.getBoolean("useiconomy", true);
     	config.setProperty("useiconomy",USE_ICONOMY);
+    	//Whether or not to use iConomy
+    	MESSAGE_PREFIX = config.getString("messageprefix", "&4[DUELS]&f");
+    	config.setProperty("messageprefix",MESSAGE_PREFIX);
     	//Message if sent from console
     	messages.put("CLIENT_ONLY", config.getString("messages.clientonly", "Duels can only be used from the client."));
     	config.setProperty("messages.clientonly", messages.get("CLIENT_ONLY"));
@@ -94,6 +98,21 @@ public class Duels extends JavaPlugin {
     	//Message sent to both players when config mode is entered
     	messages.put("CONFIG", config.getString("messages.config", "set duel options with /duel set <option> <on/off>"));
     	config.setProperty("messages.config", messages.get("CONFIG"));
+    	//Message sent to starter on /duel challenge <player>
+    	messages.put("SELF_REQUEST", config.getString("messages.selfrequest", "Duel request sent to {PLAYER}."));
+    	config.setProperty("messages.selfrequest", messages.get("SELF_REQUEST"));
+    	//Message sent to target on /duel challenge <player>
+    	messages.put("OTHER_REQUEST", config.getString("messages.otherrequest", "{PLAYER} has requested to duel with you."));
+    	config.setProperty("messages.otherrequest", messages.get("OTHER_REQUEST"));
+    	//Message sent when a player tries to cancel a duel in progress
+    	messages.put("CANCEL_STARTED", config.getString("messages.cancelstarted", "You can't cancel a duel in progress! Use '/duel surrender' instead."));
+    	config.setProperty("messages.cancelstarted", messages.get("CANCEL_STARTED"));
+    	//Message sent when a player surrenders a duel that hasn't started
+    	messages.put("SURRENDER_NOT_STARTED", config.getString("messages.surrendernotstarted", "The duel has not started yet. Use '/duel cancel' instead."));
+    	config.setProperty("messages.surrendernotstarted", messages.get("SURRENDER_NOT_STARTED"));
+    	//Message sent when a player tries to configure a duel at the wrong time
+    	messages.put("BLOCK_CONFIG", config.getString("messages.blockconfig", "Now is not the time to change duel settings."));
+    	config.setProperty("messages.blockconfig", messages.get("BLOCK_CONFIG"));
     	config.save();
         //Set configuration values
         
@@ -139,13 +158,13 @@ public class Duels extends JavaPlugin {
 				duels.put(player, duels.get(target));
 				duels.get(target).accept();
 				player.sendMessage(MessageParser.parseMessage(messages.get("SELF_ACCEPT"),"{PLAYER}",target.getDisplayName()));
-				target.sendMessage(MessageParser.parseMessage(messages.get("OTHER_ACCEPT"),"{PLAYER}",target.getDisplayName()));
+				target.sendMessage(MessageParser.parseMessage(messages.get("OTHER_ACCEPT"),"{PLAYER}",player.getDisplayName()));
 				player.sendMessage(getMessage("CONFIG"));
 				target.sendMessage(getMessage("CONFIG"));
 			}else{
 				duels.put(player, new Duel(player, target, iConomy));
-				player.sendMessage("Duel request sent to " + target.getDisplayName() + ".");
-				target.sendMessage(player.getDisplayName() + " has requested to duel with you.");
+				player.sendMessage(MessageParser.parseMessage(messages.get("SELF_REQUEST"),"{PLAYER}",target.getDisplayName()));
+				target.sendMessage(MessageParser.parseMessage(messages.get("OTHER_REQUEST"),"{PLAYER}",player.getDisplayName()));
 			}
 			return true;
 		}else if(subcommand.equalsIgnoreCase("confirm")&&args.length==1){
@@ -165,7 +184,7 @@ public class Duels extends JavaPlugin {
 			if (duel == null){
 				player.sendMessage(getMessage("NOT_DUELING"));
 			}else if(duel.targetstage == 2 && duel.starterstage == 2){
-				player.sendMessage("You can't cancel a duel in progress! Use '/duel surrender' instead.");
+				player.sendMessage(getMessage("CANCEL_STARTED"));
 			}else{
 				duel.cancel();
 			}
@@ -175,7 +194,7 @@ public class Duels extends JavaPlugin {
 			if (duel==null){
 				player.sendMessage(getMessage("NOT_DUELING"));
 			}else if(duel.starterstage!=2||duel.targetstage!=2){
-				player.sendMessage("The duel has not started yet. Use '/duel cancel' instead.");
+				player.sendMessage(getMessage("SURRENDER_NOT_STARTED"));
 			}else{
 				duel.lose(player);
 			}

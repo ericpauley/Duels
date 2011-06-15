@@ -19,6 +19,7 @@ public class MessageParser {
 		return parseMessage(message, new HashMap<String,String>());
 	}
 	public static String parseMessage(String message, Map<String,String> repl){
+		message = Duels.MESSAGE_PREFIX+message;
 		message = message.replace('&', '§');
 		String[] torepl = repl.keySet().toArray(new String[0]);
 		for(int i = 0;i<torepl.length;i++){

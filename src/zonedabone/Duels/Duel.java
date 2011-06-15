@@ -59,7 +59,7 @@ public class Duel{
 			Duels.duels.remove(target);
 		}
 		starter.sendMessage("The duel has been canceled!");
-		if(this.iconomy != null){
+		if(this.iconomy != null&&targetStake!=0&&starterStake!=0){
 			Holdings starterBalance = iConomy.getAccount(starter.getDisplayName()).getHoldings();
 			starterBalance.add(starterStake);
 			Holdings targetBalance = iConomy.getAccount(target.getDisplayName()).getHoldings();
@@ -78,7 +78,7 @@ public class Duel{
 			}
 			loser.sendMessage("You lost the duel!");
 			winner.sendMessage("You won the duel!");
-			if(this.iconomy!=null){
+			if(this.iconomy!=null&&targetStake!=0&&starterStake!=0){
 				Holdings winnerBalance = iConomy.getAccount(winner.getDisplayName()).getHoldings();
 				winnerBalance.add(starterStake+targetStake);
 			}
