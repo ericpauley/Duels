@@ -95,8 +95,7 @@ public class Duels extends JavaPlugin {
 		if (args.length==0){return false;}
 		Player player = (Player) sender;
 		String subcommand = args[0];
-		if(subcommand.equalsIgnoreCase("challenge")){
-			if(args.length<2){return false;}
+		if(subcommand.equalsIgnoreCase("challenge")&&args.length==2){
 			Player target = player.getServer().getPlayer(args[1]);
 			if(duels.get(player)!=null){
 				sender.sendMessage(getMessage("ALREADY_DUELING"));
@@ -119,7 +118,7 @@ public class Duels extends JavaPlugin {
 				target.sendMessage(player.getDisplayName() + " has requested to duel with you.");
 			}
 			return true;
-		}else if(subcommand.equalsIgnoreCase("confirm")){
+		}else if(subcommand.equalsIgnoreCase("confirm")&&args.length==1){
 			Duel duel = duels.get(player);
 			if (duel.starter == player){
 				if(duel!=null && duel.targetstage>=1 && duel.starterstage==1){
@@ -130,7 +129,8 @@ public class Duels extends JavaPlugin {
 					duel.confirm(player);
 				}
 			}
-		}else if(subcommand.equalsIgnoreCase("cancel")){
+			return true;
+		}else if(subcommand.equalsIgnoreCase("cancel")&&args.length==1){
 			Duel duel = duels.get(player);
 			if (duel == null){
 				player.sendMessage(getMessage("NOT_DUELING"));
@@ -139,7 +139,8 @@ public class Duels extends JavaPlugin {
 			}else{
 				duel.cancel();
 			}
-		}else if(subcommand.equalsIgnoreCase("surrender")){
+			return true;
+		}else if(subcommand.equalsIgnoreCase("surrender")&&args.length==1){
 			Duel duel = duels.get(player);
 			if (duel==null){
 				player.sendMessage(getMessage("NOT_DUELING"));
@@ -148,8 +149,8 @@ public class Duels extends JavaPlugin {
 			}else{
 				duel.lose(player);
 			}
-		}else if(subcommand.equalsIgnoreCase("set")){
-			if(args.length<3){return false;}
+			return true;
+		}else if(subcommand.equalsIgnoreCase("set")&&args.length==3){
 			Duel duel = duels.get(player);
 			if (duel==null){
 				player.sendMessage(getMessage("NOT_DUELING"));
@@ -183,8 +184,9 @@ public class Duels extends JavaPlugin {
 					}
 				}
 			}
+			return true;
 		}
-		return true;
+		return false;
 	}
 	
 }
