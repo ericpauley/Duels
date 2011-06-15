@@ -34,6 +34,7 @@ public class Duels extends JavaPlugin {
 	
 	//Configuration memory storage
 	public static int MAX_DISTANCE = 20;
+	public static boolean FORCE_PVP = true;
 	public static Map<String,String> messages = new HashMap<String,String>();
 	//Configuration memory storage
 
@@ -51,6 +52,9 @@ public class Duels extends JavaPlugin {
         //Max distance between players.
     	MAX_DISTANCE = config.getInt("maxdistance", 20);
     	config.setProperty("maxdistance",MAX_DISTANCE);
+    	//Whether or not to override other pvp plugins during duels
+    	FORCE_PVP = config.getBoolean("forcepvp", true);
+    	config.setProperty("forcepvp",FORCE_PVP);
     	//Message if sent from console
     	messages.put("CLIENT_ONLY", config.getString("messages.clientonly", "Duels can only be used from the client."));
     	config.setProperty("messages.clientonly", messages.get("CLIENT_ONLY"));
@@ -71,7 +75,7 @@ public class Duels extends JavaPlugin {
         
         
         //Register Events
-        pm.registerEvent(Event.Type.ENTITY_DAMAGE,  entityListener, Event.Priority.Normal,  this);
+        pm.registerEvent(Event.Type.ENTITY_DAMAGE,  entityListener, Event.Priority.Highest,  this);
         pm.registerEvent(Event.Type.PLAYER_MOVE,    playerListener, Event.Priority.Monitor, this);
         pm.registerEvent(Event.Type.PLAYER_KICK,    playerListener, Event.Priority.Monitor, this);
         pm.registerEvent(Event.Type.PLAYER_QUIT,    playerListener, Event.Priority.Monitor, this);

@@ -34,6 +34,9 @@ public class DuelsEntityListener extends EntityListener {
 					String message = player1.getDisplayName() + " hits a mighty blow to " + player2.getDisplayName() + "!";
 					player1.sendMessage(message);
 					player2.sendMessage(message);
+					if(Duels.FORCE_PVP){
+						e.setCancelled(false);
+					}
 				}
 				else{
 					e.setCancelled(true);
