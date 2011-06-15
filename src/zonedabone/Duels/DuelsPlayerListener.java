@@ -30,7 +30,7 @@ public class DuelsPlayerListener extends PlayerListener {
 		ItemStack[] armor = Duels.armorStore.get(e.getPlayer());
 		Duels.itemStore.remove(e.getPlayer());
 		Duels.armorStore.remove(e.getPlayer());
-		if(items!=null||armor!=null){
+		if(items!=null&&armor!=null){
 			e.getPlayer().getInventory().setContents(items);
 			e.getPlayer().getInventory().setArmorContents(armor);
 		}

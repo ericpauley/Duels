@@ -50,13 +50,18 @@ public class DuelsEntityListener extends EntityListener {
 		if(e.getEntity() instanceof Player){
 			Player player = (Player) e.getEntity();
 			Duel duel = Duels.duels.get(player);
-			if(duel!=null&&duel.starterstage==2&&duel.targetstage==2){
-				ItemStack[] items = player.getInventory().getContents();
-				ItemStack[] armor = player.getInventory().getArmorContents();
-				e.getDrops().clear();
-				if(duel.lose(player)){
-					Duels.itemStore.put(player, items);
-					Duels.armorStore.put(player, armor);
+			if(duel!=null){
+				int result = duel.lose(player);
+				ItemStack[] items;;
+				ItemStack[] armor;
+				if(result!=0){
+					items = player.getInventory().getContents();
+					armor = player.getInventory().getArmorContents();
+					e.getDrops().clear();
+					if(result==2){
+						Duels.itemStore.put(player, items);
+						Duels.armorStore.put(player, armor);
+					}
 				}
 			}
 		}

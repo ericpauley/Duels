@@ -67,7 +67,7 @@ public class Duel{
 		}
 		Duels.duels.remove(starter);
 	}
-	public boolean lose(Player player){
+	public int lose(Player player){
 		if(starterstage==2&&targetstage==2){
 			Player loser = player;
 			Player winner;
@@ -96,13 +96,13 @@ public class Duel{
 						winner.getWorld().dropItemNaturally(winner.getLocation(), drop[0]);
 					}
 				}
-				return false;
+				return 1;
 			}else{
-				return true;
+				return 2;
 			}
 		}else{
 			cancel();
-			return false;
+			return 0;
 		}
 	}
 	
