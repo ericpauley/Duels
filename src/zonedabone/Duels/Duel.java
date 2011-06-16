@@ -14,12 +14,12 @@ public class Duel{
 	public Player target;
 	public int starterstage;
 	public int targetstage;
-	public boolean keepItems = true;
-	int starterStake = 0;
-	int targetStake = 0;
+	public boolean keepItems = Duels.KEEP_ITEMS;
+	int starterStake = Duels.STAKE;
+	int targetStake = Duels.STAKE;
 	iConomy iconomy;
-	boolean wolves = true;
-	boolean food = true;
+	boolean wolves = Duels.WOLVES;
+	boolean food = Duels.WOLVES;
 	
 	public Duel(Player starter, Player target, iConomy iConomy){
 		this.starter = starter;
