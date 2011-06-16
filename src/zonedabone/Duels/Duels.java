@@ -13,11 +13,16 @@ import java.util.HashMap;
 import java.util.Map;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.util.config.Configuration;
+import com.nijiko.permissions.PermissionHandler;
+import com.nijikokun.bukkit.Permissions.Permissions;
+import org.bukkit.plugin.Plugin;
 
 import com.iConomy.*;
 
 public class Duels extends JavaPlugin {
 	public iConomy iConomy = null;
+	public static PermissionHandler permissionHandler = null;
+	
     //ClassListeners
 	private final DuelsEntityListener entityListener = new DuelsEntityListener(this);
 	private final DuelsPlayerListener playerListener = new DuelsPlayerListener(this);
@@ -36,12 +41,40 @@ public class Duels extends JavaPlugin {
 	public static int MAX_DISTANCE = 20;
 	public static boolean FORCE_PVP = true;
 	public static boolean USE_ICONOMY = true;
+	public static boolean USE_PERMISSIONS = true;
 	public static boolean FORCE_FIELD_DURING = true;
 	public static boolean FORCE_FIELD_BEFORE = true;
 	public static String MESSAGE_PREFIX = "&4[DUELS]&f";
 	public static Map<String,String> messages = new HashMap<String,String>();
 	//Configuration memory storage
+	
+	//Default duel settings
+	public static int STAKE = 0;
+	public static boolean WOLVES = true;
+	public static boolean FOOD = true;
+	public static boolean KEEP_ITEMS = true;
+	//Default duel settings
 
+	public boolean _getPerm(Player player, String node){
+		if(permissionHandler!=null){
+			return permissionHandler.has(player, node);
+		}else{
+			if(node.startsWith("duels.admin")){
+				return player.isOp();
+			}else{
+				return true;
+			}
+		}
+	}
+	
+	public boolean getPerm(Player player, String node){
+		boolean canGive = _getPerm(player, node);
+		if(!canGive){
+			player.sendMessage(getMessage("NO_PERMS"));
+		}
+		return canGive;
+	}
+	
 	public void onDisable() {
 		PluginDescriptionFile pdf = this.getDescription();
     	log.info(pdf.getName() + " version " + pdf.getVersion() + " DISABLED");
@@ -70,9 +103,28 @@ public class Duels extends JavaPlugin {
     	//Whether or not to use iConomy
     	USE_ICONOMY = config.getBoolean("useiconomy", true);
     	config.setProperty("useiconomy",USE_ICONOMY);
-    	//Whether or not to use iConomy
+    	//Whether or not to use permissions
+    	USE_PERMISSIONS = config.getBoolean("usepermissions", true);
+    	config.setProperty("usepermissions",USE_PERMISSIONS);
+    	//The prefix that goes in front of all messages
     	MESSAGE_PREFIX = config.getString("messageprefix", "&4[DUELS]&f");
     	config.setProperty("messageprefix",MESSAGE_PREFIX);
+    	
+    	//The default stake
+    	STAKE = config.getInt("defaults.stake", 0);
+    	config.setProperty("defaults.stake",STAKE);
+    	//The default wolves setting
+    	WOLVES = config.getBoolean("defaults.wolves", true);
+    	config.setProperty("defaults.wolves",WOLVES);
+    	//The default food setting
+    	FOOD = config.getBoolean("defaults.food", true);
+    	config.setProperty("defaults.food",FOOD);
+    	//The default keepitems setting
+    	KEEP_ITEMS = config.getBoolean("defaults.keepitems", true);
+    	config.setProperty("defaults.keepitems",KEEP_ITEMS);
+    	
+    	
+    	
     	//Message if sent from console
     	messages.put("CLIENT_ONLY", config.getString("messages.clientonly", "Duels can only be used from the client."));
     	config.setProperty("messages.clientonly", messages.get("CLIENT_ONLY"));
@@ -157,6 +209,9 @@ public class Duels extends JavaPlugin {
     	//Message sent when a player is blocked from using food
     	messages.put("BLOCK_FOOD", config.getString("messages.blockfood", "Food is disabled in this duel!"));
     	config.setProperty("messages.blockfood", messages.get("BLOCK_FOOD"));
+    	//Message sent when a player trys to do something without permission
+    	messages.put("NO_PERMS", config.getString("messages.noperms", "You don't have permission to do that."));
+    	config.setProperty("messages.noperms", messages.get("NO_PERMS"));
     	config.save();
         //Set configuration values
         
@@ -172,8 +227,16 @@ public class Duels extends JavaPlugin {
 	        pm.registerEvent(Event.Type.PLUGIN_DISABLE, serverListener, Event.Priority.Monitor, this);
         }
         //Register Events
+        if(USE_PERMISSIONS){
+        	setupPermissions();
+        }
         
-    	log.info(pdf.getName() + " version " + pdf.getVersion() + " ENABLED");
+        if(permissionHandler==null){
+        	log.info(pdf.getName() + " version " + pdf.getVersion() + " ENABLED (OP mode)");
+        }else{
+        	log.info(pdf.getName() + " version " + pdf.getVersion() + " ENABLED (Using permissions)");
+        }
+    	
 	}
 	
 	public static String getMessage(String msg){
@@ -190,6 +253,7 @@ public class Duels extends JavaPlugin {
 		Player player = (Player) sender;
 		String subcommand = args[0];
 		if(subcommand.equalsIgnoreCase("challenge")&&args.length==2){
+			if(!getPerm(player, "duels.user.challenge")){return true;}
 			Player target = player.getServer().getPlayer(args[1]);
 			if(duels.get(player)!=null){
 				sender.sendMessage(getMessage("ALREADY_DUELING"));
@@ -254,23 +318,27 @@ public class Duels extends JavaPlugin {
 				String key = args[1];
 				String value = args[2];
 				if(key.equalsIgnoreCase("keepitems")){
+					if(!getPerm(player, "duels.user.set.keepitems")){return true;}
 					if(value.equalsIgnoreCase("on")||value.equalsIgnoreCase("true")){
 						duel.setKeepItems(player, true);
 					}else if(value.equalsIgnoreCase("off")||value.equalsIgnoreCase("false")){
 						duel.setKeepItems(player, false);
 					}
 				}else if(key.equalsIgnoreCase("stake")){
+					if(!getPerm(player, "duels.user.set.stake")){return true;}
 					if(this.iConomy!=null){
 						int newStake = Integer.parseInt(value);
 						duel.setStake(player, newStake);
 					}
 				}else if(key.equalsIgnoreCase("wolves")){
+					if(!getPerm(player, "duels.user.set.wolves")){return true;}
 					if(value.equalsIgnoreCase("on")||value.equalsIgnoreCase("true")){
 						duel.setWolves(player, true);
 					}else if(value.equalsIgnoreCase("off")||value.equalsIgnoreCase("false")){
 						duel.setWolves(player, false);
 					}
 				}else if(key.equalsIgnoreCase("food")){
+					if(!getPerm(player, "duels.user.set.food")){return true;}
 					if(value.equalsIgnoreCase("on")||value.equalsIgnoreCase("true")){
 						duel.setFood(player, true);
 					}else if(value.equalsIgnoreCase("off")||value.equalsIgnoreCase("false")){
@@ -283,6 +351,15 @@ public class Duels extends JavaPlugin {
 		return false;
 	}
 	
+	private void setupPermissions() {
+	    Plugin permissionsPlugin = this.getServer().getPluginManager().getPlugin("Permissions");
+
+	    if (permissionHandler == null) {
+	        if (permissionsPlugin != null) {
+	            permissionHandler = ((Permissions) permissionsPlugin).getHandler();
+	        }
+	    }
+	}
 }
 
 
