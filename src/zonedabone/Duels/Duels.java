@@ -134,6 +134,27 @@ public class Duels extends JavaPlugin {
     	//Message sent when a player is ready to start
     	messages.put("SET_LOSE_ITEMS", config.getString("messages.setloseitems", "Your opponent will get your items if you die."));
     	config.setProperty("messages.setloseitems", messages.get("SET_LOSE_ITEMS"));
+    	//Message sent when a player sets a new stake
+    	messages.put("SET_STAKE", config.getString("messages.setstake", "{PLAYER} set their stake to {STAKE}."));
+    	config.setProperty("messages.setstake", messages.get("SET_STAKE"));
+    	//Message sent when a player can't afford the stake
+    	messages.put("BLOCK_SET_STAKE", config.getString("messages.blocksetstake", "You can't afford to set your stake to that."));
+    	config.setProperty("messages.blocksetstake", messages.get("BLOCK_SET_STAKE"));
+    	//Message sent when a player enables wolves
+    	messages.put("WOLF_ENABLE", config.getString("messages.wolfenable", "Wolves are enabled."));
+    	config.setProperty("messages.wolfenable", messages.get("WOLF_ENABLE"));
+    	//Message sent when a player disables wolves
+    	messages.put("WOLF_DISABLE", config.getString("messages.wolfdisable", "Wolves are disabled."));
+    	config.setProperty("messages.wolfdisable", messages.get("WOLF_DISABLE"));
+    	//Message sent when a player enables food
+    	messages.put("FOOD_ENABLE", config.getString("messages.foodenable", "Food is enabled."));
+    	config.setProperty("messages.foodenable", messages.get("FOOD_ENABLE"));
+    	//Message sent when a player disables food
+    	messages.put("FOOD_DISABLE", config.getString("messages.fooddisable", "Food is disabled."));
+    	config.setProperty("messages.fooddisable", messages.get("FOOD_DISABLE"));
+    	//Message sent when a player is blocked from using food
+    	messages.put("BLOCK_FOOD", config.getString("messages.blockfood", "Food is disabled in this duel!"));
+    	config.setProperty("messages.blockfood", messages.get("BLOCK_FOOD"));
     	config.save();
         //Set configuration values
         

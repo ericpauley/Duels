@@ -87,7 +87,7 @@ public class Duel{
 		if(!keepItems){
 			Inventory loserInv = loser.getInventory();
 			Inventory winnerInv = winner.getInventory();
-			ItemStack[] transfer = loserInv.getContents().clone();
+			ItemStack[] transfer = loserInv.getContents();
 			loserInv.clear();
 			for(int i = 0;i<transfer.length;i++){
 				HashMap<Integer,ItemStack> left = winnerInv.addItem(transfer[i]);
@@ -151,7 +151,7 @@ public class Duel{
 	
 	public void setStake(Player player, int newStake){
 		Holdings balance = iConomy.getAccount(player.getName()).getHoldings();
-		String message = player.getDisplayName() + " has set their wager to " + iConomy.format(newStake)+ ".";
+		String message = MessageParser.parseMessage(Duels.messages.get("PLAYER_READY"), "{PLAYER}", player.getDisplayName(), "{STAKE}", iConomy.format(newStake));
 		if(player==starter){
 			int change = newStake-starterStake;
 			if(balance.hasEnough(change)){
@@ -160,7 +160,7 @@ public class Duel{
 				starter.sendMessage(message);
 				target.sendMessage(message);
 			}else{
-				player.sendMessage("You can't afford to set your stake to that.");
+				player.sendMessage(Duels.getMessage("BLOCK_SET_STAKE"));
 			}
 		}else{
 			int change = newStake-targetStake;
@@ -170,7 +170,7 @@ public class Duel{
 				starter.sendMessage(message);
 				target.sendMessage(message);
 			}else{
-				player.sendMessage("You can't afford to set your stake to that.");
+				player.sendMessage(Duels.getMessage("BLOCK_SET_STAKE"));
 			}
 		}
 	}
@@ -179,11 +179,11 @@ public class Duel{
 		if(value!=wolves){
 			wolves = value;
 			if(wolves){
-				starter.sendMessage("Wolves are enabled.");
-				target.sendMessage("Wolves are enabled.");
+				starter.sendMessage(Duels.getMessage("WOLF_ENABLE"));
+				target.sendMessage(Duels.getMessage("WOLF_ENABLE"));
 			}else{
-				starter.sendMessage("Wolves are disabled.");
-				target.sendMessage("Wolves are disabled.");
+				starter.sendMessage(Duels.getMessage("WOLF_DISABLE"));
+				target.sendMessage(Duels.getMessage("WOLF_DISABLE"));
 			}
 		}
 	}
@@ -192,11 +192,11 @@ public class Duel{
 		if(value!=food){
 			food = value;
 			if(food){
-				starter.sendMessage("Food is enabled.");
-				target.sendMessage("Food is enabled.");
+				starter.sendMessage(Duels.getMessage("FOOD_ENABLE"));
+				target.sendMessage(Duels.getMessage("FOOD_ENABLE"));
 			}else{
-				starter.sendMessage("Food is disabled.");
-				target.sendMessage("Food is disabled.");
+				starter.sendMessage(Duels.getMessage("FOOD_DISABLE"));
+				target.sendMessage(Duels.getMessage("FOOD_DISABLE"));
 			}
 		}
 	}

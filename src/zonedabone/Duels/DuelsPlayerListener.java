@@ -67,7 +67,7 @@ public class DuelsPlayerListener extends PlayerListener {
 						type==Material.GOLDEN_APPLE||
 						type==Material.APPLE||
 						e.getClickedBlock().getType()==Material.CAKE_BLOCK){
-					e.getPlayer().sendMessage("Food is disabled in this duel!");
+					e.getPlayer().sendMessage(Duels.getMessage("BLOCK_FOOD"));
 					e.setCancelled(true);
 				}
 			}
