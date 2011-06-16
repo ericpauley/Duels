@@ -90,10 +90,12 @@ public class Duel{
 			ItemStack[] transfer = loserInv.getContents();
 			loserInv.clear();
 			for(int i = 0;i<transfer.length;i++){
-				HashMap<Integer,ItemStack> left = winnerInv.addItem(transfer[i]);
-				if(!left.isEmpty()){
-					ItemStack[] drop = (ItemStack[]) left.values().toArray();
-					winner.getWorld().dropItemNaturally(winner.getLocation(), drop[0]);
+				if(transfer[i]!=null){
+					HashMap<Integer,ItemStack> left = winnerInv.addItem(transfer[i]);
+					if(!left.isEmpty()){
+						ItemStack[] drop = (ItemStack[]) left.values().toArray();
+						winner.getWorld().dropItemNaturally(winner.getLocation(), drop[0]);
+					}
 				}
 			}
 			return false;
