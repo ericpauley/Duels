@@ -61,6 +61,7 @@ public class DuelsEntityListener extends EntityListener {
 					Duels.itemStore.put(player, items);
 					Duels.armorStore.put(player, armor);
 				}
+				player.getInventory().clear();
 			}
 		}
 	}
