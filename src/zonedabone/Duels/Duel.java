@@ -37,29 +37,29 @@ public class Duel{
 		if(player == starter){
 			starterstage = 2;
 			if(targetstage == 1){
-				target.sendMessage(starter.getDisplayName() + "is ready to start the duel.");
+				target.sendMessage(MessageParser.parseMessage(Duels.messages.get("PLAYER_READY"), "{PLAYER}", starter.getDisplayName()));
 
 			}else{
-				target.sendMessage("FIGHT TO THE DEATH!");
-				starter.sendMessage("FIGHT TO THE DEATH!");
+				target.sendMessage(Duels.getMessage("DUEL_START"));
+				starter.sendMessage(Duels.getMessage("DUEL_START"));
 			}
 		}else{
 			targetstage = 2;
 			if(starterstage == 1){
-				starter.sendMessage(target.getDisplayName() + "is ready to start the duel.");
+				starter.sendMessage(MessageParser.parseMessage(Duels.messages.get("PLAYER_READY"), "{PLAYER}", target.getDisplayName()));
 			}else{
-				target.sendMessage("FIGHT TO THE DEATH!");
-				starter.sendMessage("FIGHT TO THE DEATH!");
+				target.sendMessage(Duels.getMessage("DUEL_START"));
+				starter.sendMessage(Duels.getMessage("DUEL_START"));
 			}
 		}
 	}
 	
 	public void cancel(){
 		if (targetstage != 0){
-			target.sendMessage("The duel has been canceled!");
+			target.sendMessage(Duels.getMessage("DUEL_CANCEL"));
 			Duels.duels.remove(target);
 		}
-		starter.sendMessage("The duel has been canceled!");
+		starter.sendMessage(Duels.getMessage("DUEL_CANCEL"));
 		if(this.iconomy != null&&targetStake!=0&&starterStake!=0){
 			Holdings starterBalance = iConomy.getAccount(starter.getDisplayName()).getHoldings();
 			starterBalance.add(starterStake);
@@ -68,43 +68,37 @@ public class Duel{
 		}
 		Duels.duels.remove(starter);
 	}
-	public int lose(Player player){
-		if(starterstage==2&&targetstage==2){
-			Player loser = player;
-			Player winner;
-			if(starter == player){
-				winner = target;
-			}else{
-				winner = starter;
-			}
-			loser.sendMessage("You lost the duel!");
-			winner.sendMessage("You won the duel!");
-			if(this.iconomy!=null&&targetStake!=0&&starterStake!=0){
-				Holdings winnerBalance = iConomy.getAccount(winner.getDisplayName()).getHoldings();
-				winnerBalance.add(starterStake+targetStake);
-			}
-			Duels.duels.remove(winner);
-			Duels.duels.remove(loser);
-			if(!keepItems){
-				Inventory loserInv = loser.getInventory();
-				Inventory winnerInv = winner.getInventory();
-				ItemStack[] transfer = loserInv.getContents();
-				loserInv.clear();
-				for(int i = 0;i<transfer.length;i++){
-					HashMap<Integer,ItemStack> left = winnerInv.addItem(transfer[i]);
-					if(!left.isEmpty()){
-						ItemStack[] drop = (ItemStack[]) left.values().toArray();
-						winner.getWorld().dropItemNaturally(winner.getLocation(), drop[0]);
-					}
-				}
-				return 1;
-			}else{
-				return 2;
-			}
+	public boolean lose(Player player){
+		Player loser = player;
+		Player winner;
+		if(starter == player){
+			winner = target;
 		}else{
-			cancel();
-			return 0;
+			winner = starter;
 		}
+		loser.sendMessage(Duels.getMessage("DUEL_LOSE"));
+		winner.sendMessage(Duels.getMessage("DUEL_WIN"));
+		if(this.iconomy!=null){
+			Holdings winnerBalance = iConomy.getAccount(winner.getDisplayName()).getHoldings();
+			winnerBalance.add(starterStake+targetStake);
+		}
+		Duels.duels.remove(winner);
+		Duels.duels.remove(loser);
+		if(!keepItems){
+			Inventory loserInv = loser.getInventory();
+			Inventory winnerInv = winner.getInventory();
+			ItemStack[] transfer = loserInv.getContents().clone();
+			loserInv.clear();
+			for(int i = 0;i<transfer.length;i++){
+				HashMap<Integer,ItemStack> left = winnerInv.addItem(transfer[i]);
+				if(!left.isEmpty()){
+					ItemStack[] drop = (ItemStack[]) left.values().toArray();
+					winner.getWorld().dropItemNaturally(winner.getLocation(), drop[0]);
+				}
+			}
+			return false;
+		}
+		return true;
 	}
 	
 	public void checkLocations(Player mover, PlayerMoveEvent e){
@@ -147,21 +141,22 @@ public class Duel{
 		if(value==keepItems){return;}
 		keepItems = value;
 		if(value){
-			starter.sendMessage("You will keep your items if you lose.");
-			target.sendMessage("You will keep your items if you lose.");
+			starter.sendMessage(Duels.getMessage("SET_KEEP_ITEMS"));
+			target.sendMessage(Duels.getMessage("SET_KEEP_ITEMS"));
 		}else{
-			starter.sendMessage("Your opponent will get your items if you lose.");
-			target.sendMessage("Your opponent will get your items if you lose.");
+			starter.sendMessage(Duels.getMessage("SET_LOSE_ITEMS"));
+			target.sendMessage(Duels.getMessage("SET_LOSE_ITEMS"));
 		}
 	}
 	
 	public void setStake(Player player, int newStake){
-		Holdings balance = iConomy.getAccount(player.getDisplayName()).getHoldings();
+		Holdings balance = iConomy.getAccount(player.getName()).getHoldings();
 		String message = player.getDisplayName() + " has set their wager to " + iConomy.format(newStake)+ ".";
 		if(player==starter){
 			int change = newStake-starterStake;
 			if(balance.hasEnough(change)){
 				balance.subtract(change);
+				starterStake = newStake;
 				starter.sendMessage(message);
 				target.sendMessage(message);
 			}else{
@@ -171,6 +166,7 @@ public class Duel{
 			int change = newStake-targetStake;
 			if(balance.hasEnough(change)){
 				balance.subtract(change);
+				targetStake = newStake;
 				starter.sendMessage(message);
 				target.sendMessage(message);
 			}else{
@@ -183,11 +179,11 @@ public class Duel{
 		if(value!=wolves){
 			wolves = value;
 			if(wolves){
-				starter.sendMessage(player.getDisplayName() + " enabled wolves.");
-				target.sendMessage(player.getDisplayName() + " enabled wolves.");
+				starter.sendMessage("Wolves are enabled.");
+				target.sendMessage("Wolves are enabled.");
 			}else{
-				starter.sendMessage(player.getDisplayName() + " disabled wolves.");
-				target.sendMessage(player.getDisplayName() + " disabled wolves.");
+				starter.sendMessage("Wolves are disabled.");
+				target.sendMessage("Wolves are disabled.");
 			}
 		}
 	}
@@ -196,11 +192,11 @@ public class Duel{
 		if(value!=food){
 			food = value;
 			if(food){
-				starter.sendMessage(player.getDisplayName() + " enabled food.");
-				target.sendMessage(player.getDisplayName() + " enabled food.");
+				starter.sendMessage("Food is enabled.");
+				target.sendMessage("Food is enabled.");
 			}else{
-				starter.sendMessage(player.getDisplayName() + " disabled food.");
-				target.sendMessage(player.getDisplayName() + " disabled food.");
+				starter.sendMessage("Food is disabled.");
+				target.sendMessage("Food is disabled.");
 			}
 		}
 	}

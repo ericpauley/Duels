@@ -113,6 +113,27 @@ public class Duels extends JavaPlugin {
     	//Message sent when a player tries to configure a duel at the wrong time
     	messages.put("BLOCK_CONFIG", config.getString("messages.blockconfig", "Now is not the time to change duel settings."));
     	config.setProperty("messages.blockconfig", messages.get("BLOCK_CONFIG"));
+    	//Message sent when a player is ready to start
+    	messages.put("PLAYER_READY", config.getString("messages.playerready", "{PLAYER} is ready to start the duel."));
+    	config.setProperty("messages.playerready", messages.get("PLAYER_READY"));
+    	//Message sent when a player is ready to start
+    	messages.put("DUEL_START", config.getString("messages.duelstart", "FIGHT TO THE DEATH!"));
+    	config.setProperty("messages.duelstart", messages.get("DUEL_START"));
+    	//Message sent when a player is ready to start
+    	messages.put("DUEL_CANCEL", config.getString("messages.duelcancel", "The duel has been canceled."));
+    	config.setProperty("messages.duelcancel", messages.get("DUEL_CANCEL"));
+    	//Message sent when a player is ready to start
+    	messages.put("DUEL_LOSE", config.getString("messages.duellose", "You lost the duel!"));
+    	config.setProperty("messages.duellose", messages.get("DUEL_LOSE"));
+    	//Message sent when a player is ready to start
+    	messages.put("DUEL_WIN", config.getString("messages.duelwin", "You won the duel!"));
+    	config.setProperty("messages.duelwin", messages.get("DUEL_WIN"));
+    	//Message sent when a player is ready to start
+    	messages.put("SET_KEEP_ITEMS", config.getString("messages.setkeepitems", "You will keep you items if you die."));
+    	config.setProperty("messages.setkeepitems", messages.get("SET_KEEP_ITEMS"));
+    	//Message sent when a player is ready to start
+    	messages.put("SET_LOSE_ITEMS", config.getString("messages.setloseitems", "Your opponent will get your items if you die."));
+    	config.setProperty("messages.setloseitems", messages.get("SET_LOSE_ITEMS"));
     	config.save();
         //Set configuration values
         
@@ -210,9 +231,9 @@ public class Duels extends JavaPlugin {
 				String key = args[1];
 				String value = args[2];
 				if(key.equalsIgnoreCase("keepitems")){
-					if(value=="on"||value=="true"){
+					if(value.equalsIgnoreCase("on")||value.equalsIgnoreCase("true")){
 						duel.setKeepItems(player, true);
-					}else if(value=="off"||value=="false"){
+					}else if(value.equalsIgnoreCase("off")||value.equalsIgnoreCase("false")){
 						duel.setKeepItems(player, false);
 					}
 				}else if(key.equalsIgnoreCase("stake")){
@@ -221,15 +242,15 @@ public class Duels extends JavaPlugin {
 						duel.setStake(player, newStake);
 					}
 				}else if(key.equalsIgnoreCase("wolves")){
-					if(value=="on"||value=="true"){
+					if(value.equalsIgnoreCase("on")||value.equalsIgnoreCase("true")){
 						duel.setWolves(player, true);
-					}else if(value=="off"||value=="false"){
+					}else if(value.equalsIgnoreCase("off")||value.equalsIgnoreCase("false")){
 						duel.setWolves(player, false);
 					}
 				}else if(key.equalsIgnoreCase("food")){
-					if(value=="on"||value=="true"){
+					if(value.equalsIgnoreCase("on")||value.equalsIgnoreCase("true")){
 						duel.setFood(player, true);
-					}else if(value=="off"||value=="false"){
+					}else if(value.equalsIgnoreCase("off")||value.equalsIgnoreCase("false")){
 						duel.setFood(player, false);
 					}
 				}
