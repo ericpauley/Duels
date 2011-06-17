@@ -212,6 +212,12 @@ public class Duels extends JavaPlugin {
     	//Message sent when a player trys to do something without permission
     	messages.put("NO_PERMS", config.getString("messages.noperms", "You don't have permission to do that."));
     	config.setProperty("messages.noperms", messages.get("NO_PERMS"));
+    	//Message sent when a player trys to do something without permission
+    	messages.put("ALREADY_CONFIRMED", config.getString("messages.alreadyconfirmed", "You've already confirmed the settings in this duel."));
+    	config.setProperty("messages.alreadyconfirmed", messages.get("ALREADY_CONFIRMED"));
+    	//Message sent when a player trys to do something without permission
+    	messages.put("NOT_CONFIG", config.getString("messages.notconfig", "Your opponent is not ready for that."));
+    	config.setProperty("messages.notconfig", messages.get("NOT_CONFIG"));
     	config.save();
         //Set configuration values
         
@@ -278,13 +284,32 @@ public class Duels extends JavaPlugin {
 			return true;
 		}else if(subcommand.equalsIgnoreCase("confirm")&&args.length==1){
 			Duel duel = duels.get(player);
-			if (duel.starter == player){
-				if(duel!=null && duel.targetstage>=1 && duel.starterstage==1){
-					duel.confirm(player);
-				}
+			if(duel==null){
+				player.sendMessage(getMessage("NOT_DUELING"));
+				return true;
+			}
+			int pstage;
+			int ostage;
+			if(duel.starter==player){
+				pstage=duel.starterstage;
+				ostage=duel.targetstage;
 			}else{
-				if(duel!=null && duel.starterstage>=1 && duel.targetstage==1){
-					duel.confirm(player);
+				ostage=duel.starterstage;
+				pstage=duel.targetstage;
+			}
+			if(pstage==2){
+				player.sendMessage(getMessage("ALREADY_CONFIRMED"));
+			}else if(ostage==0){
+				player.sendMessage(getMessage("NOT_CONFIG"));
+			}else{
+				if (duel.starter == player){
+					if(duel!=null && duel.targetstage>=1 && duel.starterstage==1){
+						duel.confirm(player);
+					}
+				}else{
+					if(duel!=null && duel.starterstage>=1 && duel.targetstage==1){
+						duel.confirm(player);
+					}
 				}
 			}
 			return true;
@@ -313,7 +338,7 @@ public class Duels extends JavaPlugin {
 			if (duel==null){
 				player.sendMessage(getMessage("NOT_DUELING"));
 			}else if(duel.starterstage!=1||duel.targetstage!=1){
-				player.sendMessage("Now is not the time to change duel settings.");
+				player.sendMessage(getMessage("BLOCK_CONFIG"));
 			}else{
 				String key = args[1];
 				String value = args[2];

@@ -23,12 +23,11 @@ public class DuelsPlayerListener extends PlayerListener {
 		Duel duel = Duels.duels.get(player);
 		if(duel!=null){
 			duel.checkLocations(player, e);
-		}else{
-			Object[] duels = Duels.duels.values().toArray();
-			for(int i = 0;i<duels.length;i++){
-				if(duels[i] instanceof Duel){
-					((Duel)duels[i]).checkLocations(player, e);
-				}
+		}
+		Object[] duels = Duels.duels.values().toArray();
+		for(int i = 0;i<duels.length;i++){
+			if(duels[i] instanceof Duel){
+				((Duel)duels[i]).checkLocations(player, e);
 			}
 		}
 		ItemStack[] items = Duels.itemStore.get(e.getPlayer());
@@ -54,14 +53,13 @@ public class DuelsPlayerListener extends PlayerListener {
 		Duel duel = Duels.duels.get(player);
 		if(duel!=null){
 			duel.disconnect(player);
-		}else{
-			Object[] duels = Duels.duels.values().toArray();
-			for(int i = 0;i<duels.length;i++){
-				if(duels[i] instanceof Duel){
-					Duel tocancel = (Duel) duels[i];
-					if(tocancel.starter==player||tocancel.target==player){
-						tocancel.cancel();
-					}
+		}
+		Object[] duels = Duels.duels.values().toArray();
+		for(int i = 0;i<duels.length;i++){
+			if(duels[i] instanceof Duel){
+				Duel tocancel = (Duel) duels[i];
+				if(tocancel.starter==player||tocancel.target==player){
+					tocancel.cancel();
 				}
 			}
 		}
