@@ -112,7 +112,7 @@ public class Duel{
 		}else{
 			otherLoc=starter.getLocation();
 		}
-		if(otherLoc.distance(newLoc)>Duels.MAX_DISTANCE){
+		if(newLoc==null || otherLoc==null || newLoc.getWorld()!=otherLoc.getWorld() || otherLoc.distance(newLoc)>Duels.MAX_DISTANCE){
 			if(starterstage==1&&targetstage==1){
 				if(Duels.FORCE_FIELD_BEFORE){
 					e.setCancelled(true);
