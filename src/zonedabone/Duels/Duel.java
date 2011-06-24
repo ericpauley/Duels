@@ -89,7 +89,6 @@ public class Duel{
 		if(died&&Duels.RANKING_WEIGHT!=0){
 			outcome = ((double)winner.getHealth())/20;
 			outcome = Math.pow(outcome, 1/Duels.RANKING_WEIGHT);
-			outcome = outcome/2+.5;
 		}else{
 			outcome = 1;
 		}
