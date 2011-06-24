@@ -1,5 +1,6 @@
 package zonedabone.Duels;
 
+import java.io.File;
 import java.util.logging.Logger;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -9,7 +10,10 @@ import org.bukkit.event.Event;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
+
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.util.config.Configuration;
@@ -33,7 +37,10 @@ public class Duels extends JavaPlugin {
 	public static Map<Player,Duel> duels = new HashMap<Player,Duel>();
 	public static Map<Player,ItemStack[]> itemStore = new HashMap<Player,ItemStack[]>();
 	public static Map<Player,ItemStack[]> armorStore = new HashMap<Player,ItemStack[]>();
+	public static List<String> DISABLED_WORLDS;
 	////Data storage via HashMaps
+	
+	public static Configuration highscores = new Configuration(new File("plugins/Duels/highscores.yml"));
 	
 	Logger log = Logger.getLogger("Minecraft");
 	
@@ -46,6 +53,10 @@ public class Duels extends JavaPlugin {
 	public static boolean FORCE_FIELD_BEFORE = true;
 	public static String MESSAGE_PREFIX = "&4[DUELS]&f";
 	public static Map<String,String> messages = new HashMap<String,String>();
+	public static double RANKING_WEIGHT = 1;
+	public static double RANKING_MAGNITUDE = 10;
+	public static double STARTING_RATING = 1000;
+	public static int DEFAULT_TOP_COUNT = 10;
 	//Configuration memory storage
 	
 	//Default duel settings
@@ -78,6 +89,7 @@ public class Duels extends JavaPlugin {
 	public void onDisable() {
 		PluginDescriptionFile pdf = this.getDescription();
     	log.info(pdf.getName() + " version " + pdf.getVersion() + " DISABLED");
+    	highscores.save();
 	}
 
 	public void onEnable() {
@@ -109,6 +121,18 @@ public class Duels extends JavaPlugin {
     	//The prefix that goes in front of all messages
     	MESSAGE_PREFIX = config.getString("messageprefix", "&4[DUELS]&f");
     	config.setProperty("messageprefix",MESSAGE_PREFIX);
+    	//How to weight duel rankings
+    	RANKING_WEIGHT = config.getDouble("highscores.weightedratings", 1);
+    	config.setProperty("highscores.weightedratings",RANKING_WEIGHT);
+    	//The maximum ranking effect a duel can have
+    	RANKING_MAGNITUDE = config.getDouble("highscores.ratingmagnitude", 10);
+    	config.setProperty("highscores.weightedratings",RANKING_MAGNITUDE);
+    	//The starting rating for new players
+    	STARTING_RATING = config.getDouble("highscores.weightedratings", 1000);
+    	config.setProperty("highscores.rankingmagnitude",STARTING_RATING);
+    	//The starting rating for new players
+    	DEFAULT_TOP_COUNT = config.getInt("highscores.defaulttopcount", 10);
+    	config.setProperty("highscores.defaulttopcount",DEFAULT_TOP_COUNT);
     	
     	//The default stake
     	STAKE = config.getInt("defaults.stake", 0);
@@ -122,7 +146,7 @@ public class Duels extends JavaPlugin {
     	//The default keepitems setting
     	KEEP_ITEMS = config.getBoolean("defaults.keepitems", true);
     	config.setProperty("defaults.keepitems",KEEP_ITEMS);
-    	
+    	DISABLED_WORLDS = config.getStringList("disabledworlds", null);
     	
     	
     	//Message if sent from console
@@ -218,6 +242,9 @@ public class Duels extends JavaPlugin {
     	//Message sent when a player trys to do something without permission
     	messages.put("NOT_CONFIG", config.getString("messages.notconfig", "Your opponent is not ready for that."));
     	config.setProperty("messages.notconfig", messages.get("NOT_CONFIG"));
+    	//Message sent when a player trys to do something in a disabled world
+    	messages.put("WORLD_DISABLED", config.getString("messages.worlddisabled", "You cannot duel in this world."));
+    	config.setProperty("messages.worlddisabled", messages.get("WORLD_DISABLED"));
     	config.save();
         //Set configuration values
         
@@ -232,6 +259,9 @@ public class Duels extends JavaPlugin {
 	        pm.registerEvent(Event.Type.PLUGIN_ENABLE,  serverListener, Event.Priority.Monitor, this);
 	        pm.registerEvent(Event.Type.PLUGIN_DISABLE, serverListener, Event.Priority.Monitor, this);
         }
+        
+        highscores.load();
+        
         //Register Events
         if(USE_PERMISSIONS){
         	setupPermissions();
@@ -250,128 +280,142 @@ public class Duels extends JavaPlugin {
 	}
 	
 	public boolean onCommand(CommandSender sender, Command command, String label, String[] args){
-		if(sender instanceof ConsoleCommandSender){
-			sender.sendMessage(getMessage("CLIENT_ONLY"));
-			return true;
-		}
-		if(!command.getName().equalsIgnoreCase("duel")){return false;}
 		if (args.length==0){return false;}
-		Player player = (Player) sender;
-		String subcommand = args[0];
-		if(subcommand.equalsIgnoreCase("challenge")&&args.length==2){
-			if(!getPerm(player, "duels.user.challenge")){return true;}
-			Player target = player.getServer().getPlayer(args[1]);
-			if(duels.get(player)!=null){
-				sender.sendMessage(getMessage("ALREADY_DUELING"));
-			}else if(player==target){
-				sender.sendMessage(getMessage("CANT_DUEL_SELF"));
-			}else if(target==null||!target.isOnline()){
-				sender.sendMessage(MessageParser.parseMessage(messages.get("PLAYER_OFFLINE"),"{PLAYER}",args[1]));
-			}else if(player.getLocation().distance(target.getLocation())>MAX_DISTANCE){
-				player.sendMessage(MessageParser.parseMessage(messages.get("NOT_IN_RANGE"),"{PLAYER}",target.getDisplayName(),"{RANGE}", Integer.toString(MAX_DISTANCE)));
-			}else if(duels.get(target)!=null && duels.get(target).target == player){
-				duels.put(player, duels.get(target));
-				duels.get(target).accept();
-				player.sendMessage(MessageParser.parseMessage(messages.get("SELF_ACCEPT"),"{PLAYER}",target.getDisplayName()));
-				target.sendMessage(MessageParser.parseMessage(messages.get("OTHER_ACCEPT"),"{PLAYER}",player.getDisplayName()));
-				player.sendMessage(getMessage("CONFIG"));
-				target.sendMessage(getMessage("CONFIG"));
-			}else{
-				duels.put(player, new Duel(player, target, iConomy));
-				player.sendMessage(MessageParser.parseMessage(messages.get("SELF_REQUEST"),"{PLAYER}",target.getDisplayName()));
-				target.sendMessage(MessageParser.parseMessage(messages.get("OTHER_REQUEST"),"{PLAYER}",player.getDisplayName()));
-			}
-			return true;
-		}else if(subcommand.equalsIgnoreCase("confirm")&&args.length==1){
-			Duel duel = duels.get(player);
-			if(duel==null){
-				player.sendMessage(getMessage("NOT_DUELING"));
+		if(command.getName().equalsIgnoreCase("duel")){
+			if(sender instanceof ConsoleCommandSender){
+				sender.sendMessage(getMessage("CLIENT_ONLY"));
 				return true;
 			}
-			int pstage;
-			int ostage;
-			if(duel.starter==player){
-				pstage=duel.starterstage;
-				ostage=duel.targetstage;
-			}else{
-				ostage=duel.starterstage;
-				pstage=duel.targetstage;
+			Player player = (Player) sender;
+			if(DISABLED_WORLDS.contains(player.getWorld().getName())){
+				player.sendMessage(getMessage("WORLD_DISABLED"));
+				return true;
 			}
-			if(pstage==2){
-				player.sendMessage(getMessage("ALREADY_CONFIRMED"));
-			}else if(ostage==0){
-				player.sendMessage(getMessage("NOT_CONFIG"));
-			}else{
-				if (duel.starter == player){
-					if(duel!=null && duel.targetstage>=1 && duel.starterstage==1){
-						duel.confirm(player);
-					}
+			String subcommand = args[0];
+			if(subcommand.equalsIgnoreCase("challenge")&&args.length==2){
+				if(!getPerm(player, "duels.user.challenge")){return true;}
+				Player target = player.getServer().getPlayer(args[1]);
+				if(duels.get(player)!=null){
+					sender.sendMessage(getMessage("ALREADY_DUELING"));
+				}else if(player==target){
+					sender.sendMessage(getMessage("CANT_DUEL_SELF"));
+				}else if(target==null||!target.isOnline()){
+					sender.sendMessage(MessageParser.parseMessage(messages.get("PLAYER_OFFLINE"),"{PLAYER}",args[1]));
+				}else if(player.getLocation().distance(target.getLocation())>MAX_DISTANCE){
+					player.sendMessage(MessageParser.parseMessage(messages.get("NOT_IN_RANGE"),"{PLAYER}",target.getDisplayName(),"{RANGE}", Integer.toString(MAX_DISTANCE)));
+				}else if(duels.get(target)!=null && duels.get(target).target == player){
+					duels.put(player, duels.get(target));
+					duels.get(target).accept();
+					player.sendMessage(MessageParser.parseMessage(messages.get("SELF_ACCEPT"),"{PLAYER}",target.getDisplayName()));
+					target.sendMessage(MessageParser.parseMessage(messages.get("OTHER_ACCEPT"),"{PLAYER}",player.getDisplayName()));
+					player.sendMessage(getMessage("CONFIG"));
+					target.sendMessage(getMessage("CONFIG"));
 				}else{
-					if(duel!=null && duel.starterstage>=1 && duel.targetstage==1){
-						duel.confirm(player);
+					duels.put(player, new Duel(player, target, iConomy));
+					player.sendMessage(MessageParser.parseMessage(messages.get("SELF_REQUEST"),"{PLAYER}",target.getDisplayName()));
+					target.sendMessage(MessageParser.parseMessage(messages.get("OTHER_REQUEST"),"{PLAYER}",player.getDisplayName()));
+				}
+				return true;
+			}else if(subcommand.equalsIgnoreCase("confirm")&&args.length==1){
+				Duel duel = duels.get(player);
+				if(duel==null){
+					player.sendMessage(getMessage("NOT_DUELING"));
+					return true;
+				}
+				int pstage;
+				int ostage;
+				if(duel.starter==player){
+					pstage=duel.starterstage;
+					ostage=duel.targetstage;
+				}else{
+					ostage=duel.starterstage;
+					pstage=duel.targetstage;
+				}
+				if(pstage==2){
+					player.sendMessage(getMessage("ALREADY_CONFIRMED"));
+				}else if(ostage==0){
+					player.sendMessage(getMessage("NOT_CONFIG"));
+				}else{
+					if (duel.starter == player){
+						if(duel!=null && duel.targetstage>=1 && duel.starterstage==1){
+							duel.confirm(player);
+						}
+					}else{
+						if(duel!=null && duel.starterstage>=1 && duel.targetstage==1){
+							duel.confirm(player);
+						}
 					}
 				}
-			}
-			return true;
-		}else if(subcommand.equalsIgnoreCase("cancel")&&args.length==1){
-			Duel duel = duels.get(player);
-			if (duel == null){
-				player.sendMessage(getMessage("NOT_DUELING"));
-			}else if(duel.targetstage == 2 && duel.starterstage == 2){
-				player.sendMessage(getMessage("CANCEL_STARTED"));
-			}else{
-				duel.cancel();
-			}
-			return true;
-		}else if(subcommand.equalsIgnoreCase("surrender")&&args.length==1){
-			Duel duel = duels.get(player);
-			if (duel==null){
-				player.sendMessage(getMessage("NOT_DUELING"));
-			}else if(duel.starterstage!=2||duel.targetstage!=2){
-				player.sendMessage(getMessage("SURRENDER_NOT_STARTED"));
-			}else{
-				duel.lose(player);
-			}
-			return true;
-		}else if(subcommand.equalsIgnoreCase("set")&&args.length==3){
-			Duel duel = duels.get(player);
-			if (duel==null){
-				player.sendMessage(getMessage("NOT_DUELING"));
-			}else if(duel.starterstage!=1||duel.targetstage!=1){
-				player.sendMessage(getMessage("BLOCK_CONFIG"));
-			}else{
-				String key = args[1];
-				String value = args[2];
-				if(key.equalsIgnoreCase("keepitems")){
-					if(!getPerm(player, "duels.user.set.keepitems")){return true;}
-					if(value.equalsIgnoreCase("on")||value.equalsIgnoreCase("true")){
-						duel.setKeepItems(player, true);
-					}else if(value.equalsIgnoreCase("off")||value.equalsIgnoreCase("false")){
-						duel.setKeepItems(player, false);
-					}
-				}else if(key.equalsIgnoreCase("stake")){
-					if(!getPerm(player, "duels.user.set.stake")){return true;}
-					if(this.iConomy!=null){
-						int newStake = Integer.parseInt(value);
-						duel.setStake(player, newStake);
-					}
-				}else if(key.equalsIgnoreCase("wolves")){
-					if(!getPerm(player, "duels.user.set.wolves")){return true;}
-					if(value.equalsIgnoreCase("on")||value.equalsIgnoreCase("true")){
-						duel.setWolves(player, true);
-					}else if(value.equalsIgnoreCase("off")||value.equalsIgnoreCase("false")){
-						duel.setWolves(player, false);
-					}
-				}else if(key.equalsIgnoreCase("food")){
-					if(!getPerm(player, "duels.user.set.food")){return true;}
-					if(value.equalsIgnoreCase("on")||value.equalsIgnoreCase("true")){
-						duel.setFood(player, true);
-					}else if(value.equalsIgnoreCase("off")||value.equalsIgnoreCase("false")){
-						duel.setFood(player, false);
+				return true;
+			}else if(subcommand.equalsIgnoreCase("cancel")&&args.length==1){
+				Duel duel = duels.get(player);
+				if (duel == null){
+					player.sendMessage(getMessage("NOT_DUELING"));
+				}else if(duel.targetstage == 2 && duel.starterstage == 2){
+					player.sendMessage(getMessage("CANCEL_STARTED"));
+				}else{
+					duel.cancel();
+				}
+				return true;
+			}else if(subcommand.equalsIgnoreCase("surrender")&&args.length==1){
+				Duel duel = duels.get(player);
+				if (duel==null){
+					player.sendMessage(getMessage("NOT_DUELING"));
+				}else if(duel.starterstage!=2||duel.targetstage!=2){
+					player.sendMessage(getMessage("SURRENDER_NOT_STARTED"));
+				}else{
+					duel.lose(player, false);
+				}
+				return true;
+			}else if(subcommand.equalsIgnoreCase("set")&&args.length==3){
+				Duel duel = duels.get(player);
+				if (duel==null){
+					player.sendMessage(getMessage("NOT_DUELING"));
+				}else if(duel.starterstage!=1||duel.targetstage!=1){
+					player.sendMessage(getMessage("BLOCK_CONFIG"));
+				}else{
+					String key = args[1];
+					String value = args[2];
+					if(key.equalsIgnoreCase("keepitems")){
+						if(!getPerm(player, "duels.user.set.keepitems")){return true;}
+						if(value.equalsIgnoreCase("on")||value.equalsIgnoreCase("true")){
+							duel.setKeepItems(player, true);
+						}else if(value.equalsIgnoreCase("off")||value.equalsIgnoreCase("false")){
+							duel.setKeepItems(player, false);
+						}
+					}else if(key.equalsIgnoreCase("stake")){
+						if(!getPerm(player, "duels.user.set.stake")){return true;}
+						if(this.iConomy!=null){
+							int newStake = Integer.parseInt(value);
+							duel.setStake(player, newStake);
+						}
+					}else if(key.equalsIgnoreCase("wolves")){
+						if(!getPerm(player, "duels.user.set.wolves")){return true;}
+						if(value.equalsIgnoreCase("on")||value.equalsIgnoreCase("true")){
+							duel.setWolves(player, true);
+						}else if(value.equalsIgnoreCase("off")||value.equalsIgnoreCase("false")){
+							duel.setWolves(player, false);
+						}
+					}else if(key.equalsIgnoreCase("food")){
+						if(!getPerm(player, "duels.user.set.food")){return true;}
+						if(value.equalsIgnoreCase("on")||value.equalsIgnoreCase("true")){
+							duel.setFood(player, true);
+						}else if(value.equalsIgnoreCase("off")||value.equalsIgnoreCase("false")){
+							duel.setFood(player, false);
+						}
 					}
 				}
+				return true;
+			}else if(subcommand.equalsIgnoreCase("highscores")){
+				List<String> players = highscores.getKeys();
+				Collections.sort(players, new HighscoreComparator());
+				player.sendMessage("Top "+Integer.toString(Math.max(DEFAULT_TOP_COUNT, players.size()))+" Duelists:");
+				for(int i = 0;i<Math.max(DEFAULT_TOP_COUNT, players.size());i++){
+					player.sendMessage(Integer.toString(i+1)+". "+players.get(i));
+				}
 			}
-			return true;
+		}else if(command.getName().equalsIgnoreCase("da")){
+			
 		}
 		return false;
 	}

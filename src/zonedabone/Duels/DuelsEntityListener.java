@@ -27,6 +27,7 @@ public class DuelsEntityListener extends EntityListener {
 			if(entity1 instanceof Player && entity2 instanceof Player){
 				Player player1 = (Player) entity1;
 				Player player2 = (Player) entity2;
+				if(Duels.DISABLED_WORLDS.contains(player1.getWorld().getName())){return;}
 				if(Duels.duels.get(player1)==Duels.duels.get(player2)
 						&&Duels.duels.get(player1)!=null
 						&&Duels.duels.get(player1).targetstage==2
@@ -49,7 +50,7 @@ public class DuelsEntityListener extends EntityListener {
 			Duel duel = Duels.duels.get(player);
 			if(duel!=null&&duel.starterstage==2&&duel.targetstage==2){
 				e.getDrops().clear();
-				boolean result = duel.lose(player);
+				boolean result = duel.lose(player, true);
 				ItemStack[] items;
 				ItemStack[] armor;
 				if(result){

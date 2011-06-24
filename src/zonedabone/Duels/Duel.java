@@ -8,6 +8,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import com.iConomy.*;
 import com.iConomy.system.Holdings;
+import java.lang.Math;
 
 public class Duel{
 	public Player starter;
@@ -68,7 +69,7 @@ public class Duel{
 		}
 		Duels.duels.remove(starter);
 	}
-	public boolean lose(Player player){
+	public boolean lose(Player player, boolean died){
 		Player loser = player;
 		Player winner;
 		if(starter == player){
@@ -78,6 +79,28 @@ public class Duel{
 		}
 		loser.sendMessage(Duels.getMessage("DUEL_LOSE"));
 		winner.sendMessage(Duels.getMessage("DUEL_WIN"));
+		//Set highscores
+		String winnerName = winner.getName();
+		String loserName = loser.getName();
+		double winnerRating = Duels.highscores.getDouble(winnerName+".rating", Duels.STARTING_RATING);
+		double loserRating = Duels.highscores.getDouble(loserName+".rating", Duels.STARTING_RATING);
+		double winnerChance = 1/(1+Math.pow(10,(loserRating-winnerRating)/400));
+		double outcome;
+		if(died&&Duels.RANKING_WEIGHT!=0){
+			outcome = ((double)winner.getHealth())/20;
+			outcome = Math.pow(outcome, 1/Duels.RANKING_WEIGHT);
+			outcome = outcome/2+.5;
+		}else{
+			outcome = 1;
+		}
+		double change = Duels.RANKING_MAGNITUDE*(outcome-winnerChance);
+		Duels.highscores.setProperty(winnerName+".rating", winnerRating+change);
+		Duels.highscores.setProperty(loserName+".rating", loserRating-change);
+		Duels.highscores.setProperty(winnerName+".duels", Duels.highscores.getInt(winnerName+".duels", 0)+1);
+		Duels.highscores.setProperty(loserName+".duels", Duels.highscores.getInt(loserName+".duels", 0)+1);
+		Duels.highscores.setProperty(winnerName+".wins", Duels.highscores.getInt(winnerName+".wins", 0)+1);
+		Duels.highscores.setProperty(loserName+".losses", Duels.highscores.getInt(loserName+".losses", 0)+1);
+		//Set Highscores
 		if(this.iconomy!=null){
 			Holdings winnerBalance = iConomy.getAccount(winner.getDisplayName()).getHoldings();
 			winnerBalance.add(starterStake+targetStake);
@@ -123,7 +146,7 @@ public class Duel{
 				if(Duels.FORCE_FIELD_DURING){
 					e.setCancelled(true);
 				}else{
-					lose(mover);
+					lose(mover, false);
 				}
 			}else{
 				cancel();
@@ -135,7 +158,7 @@ public class Duel{
 		if(starterstage<2&&targetstage<2){
 			cancel();
 		}else{
-			lose(player);
+			lose(player, false);
 		}
 	}
 	
