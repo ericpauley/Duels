@@ -102,10 +102,10 @@ public class Duels extends JavaPlugin {
     	MAX_DISTANCE = config.getInt("maxdistance", 20);
     	config.setProperty("maxdistance",MAX_DISTANCE);
     	//Max distance between players during the duel. (Instead of surrender)
-    	FORCE_FIELD_DURING = config.getBoolean("forcefeild.during", true);
+    	FORCE_FIELD_DURING = config.getBoolean("forcefeild.during", false);
     	config.setProperty("forcefeild.during",FORCE_FIELD_DURING);
     	//Max distance between players while preparing the duel. (Instead of cancel)
-    	FORCE_FIELD_BEFORE = config.getBoolean("forcefeild.before", true);
+    	FORCE_FIELD_BEFORE = config.getBoolean("forcefeild.before", false);
     	config.setProperty("forcefeild.before",FORCE_FIELD_BEFORE);
     	//Whether or not to override other pvp plugins during duels
     	FORCE_PVP = config.getBoolean("forcepvp", true);
