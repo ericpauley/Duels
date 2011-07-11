@@ -6,6 +6,9 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+
+import zonedabone.Duels.payment.Method;
+
 import com.iConomy.*;
 import com.iConomy.system.Holdings;
 import java.lang.Math;
@@ -18,16 +21,16 @@ public class Duel{
 	public boolean keepItems = Duels.KEEP_ITEMS;
 	int starterStake = Duels.STAKE;
 	int targetStake = Duels.STAKE;
-	iConomy iconomy;
 	boolean wolves = Duels.WOLVES;
 	boolean food = Duels.WOLVES;
+	Method method = null;
 	
-	public Duel(Player starter, Player target, iConomy iConomy){
+	public Duel(Player starter, Player target, Method method){
 		this.starter = starter;
 		this.target = target;
-		this.iconomy = iConomy;
 		starterstage = 1;
 		targetstage = 0;
+		this.method = method;
 	}
 	
 	public void accept(){
@@ -61,9 +64,8 @@ public class Duel{
 			Duels.duels.remove(target);
 		}
 		starter.sendMessage(Duels.getMessage("DUEL_CANCEL"));
-		if(this.iconomy != null&&targetStake!=0&&starterStake!=0){
-			Holdings starterBalance = iConomy.getAccount(starter.getDisplayName()).getHoldings();
-			starterBalance.add(starterStake);
+		if(method != null&&targetStake!=0&&starterStake!=0){
+			method.getAccount(starter.getName()).add(starterStake);
 			Holdings targetBalance = iConomy.getAccount(target.getDisplayName()).getHoldings();
 			targetBalance.add(targetStake);
 		}
@@ -100,9 +102,8 @@ public class Duel{
 		Duels.highscores.setProperty(winnerName+".wins", Duels.highscores.getInt(winnerName+".wins", 0)+1);
 		Duels.highscores.setProperty(loserName+".losses", Duels.highscores.getInt(loserName+".losses", 0)+1);
 		//Set Highscores
-		if(this.iconomy!=null){
-			Holdings winnerBalance = iConomy.getAccount(winner.getDisplayName()).getHoldings();
-			winnerBalance.add(starterStake+targetStake);
+		if(this.method!=null){
+			method.getAccount(winner.getName()).add(starterStake+targetStake);
 		}
 		Duels.duels.remove(winner);
 		Duels.duels.remove(loser);
@@ -174,12 +175,11 @@ public class Duel{
 	}
 	
 	public void setStake(Player player, int newStake){
-		Holdings balance = iConomy.getAccount(player.getName()).getHoldings();
-		String message = MessageParser.parseMessage(Duels.messages.get("PLAYER_READY"), "{PLAYER}", player.getDisplayName(), "{STAKE}", iConomy.format(newStake));
+		String message = MessageParser.parseMessage(Duels.messages.get("PLAYER_READY"), "{PLAYER}", player.getDisplayName(), "{STAKE}", method.format(newStake));
 		if(player==starter){
 			int change = newStake-starterStake;
-			if(balance.hasEnough(change)){
-				balance.subtract(change);
+			if(method.getAccount(player.getName()).hasEnough(change)){
+				method.getAccount(player.getName()).subtract(change);
 				starterStake = newStake;
 				starter.sendMessage(message);
 				target.sendMessage(message);
@@ -188,8 +188,8 @@ public class Duel{
 			}
 		}else{
 			int change = newStake-targetStake;
-			if(balance.hasEnough(change)){
-				balance.subtract(change);
+			if(method.getAccount(player.getName()).hasEnough(change)){
+				method.getAccount(player.getName()).subtract(change);
 				targetStake = newStake;
 				starter.sendMessage(message);
 				target.sendMessage(message);

@@ -21,10 +21,9 @@ import com.nijiko.permissions.PermissionHandler;
 import com.nijikokun.bukkit.Permissions.Permissions;
 import org.bukkit.plugin.Plugin;
 
-import com.iConomy.*;
+import zonedabone.Duels.payment.Method;
 
 public class Duels extends JavaPlugin {
-	public iConomy iConomy = null;
 	public static PermissionHandler permissionHandler = null;
 	
     //ClassListeners
@@ -47,7 +46,6 @@ public class Duels extends JavaPlugin {
 	//Configuration memory storage
 	public static int MAX_DISTANCE = 20;
 	public static boolean FORCE_PVP = true;
-	public static boolean USE_ICONOMY = true;
 	public static boolean USE_PERMISSIONS = true;
 	public static boolean FORCE_FIELD_DURING = true;
 	public static boolean FORCE_FIELD_BEFORE = true;
@@ -59,6 +57,8 @@ public class Duels extends JavaPlugin {
 	public static double STARTING_RATING = 1000;
 	public static int DEFAULT_TOP_COUNT = 10;
 	//Configuration memory storage
+	
+	public Method Method = null;
 	
 	//Default duel settings
 	public static int STAKE = 0;
@@ -111,9 +111,6 @@ public class Duels extends JavaPlugin {
     	//Whether or not to override other pvp plugins during duels
     	FORCE_PVP = config.getBoolean("forcepvp", true);
     	config.setProperty("forcepvp",FORCE_PVP);
-    	//Whether or not to use iConomy
-    	USE_ICONOMY = config.getBoolean("useiconomy", true);
-    	config.setProperty("useiconomy",USE_ICONOMY);
     	//Whether or not to use permissions
     	USE_PERMISSIONS = config.getBoolean("usepermissions", true);
     	config.setProperty("usepermissions",USE_PERMISSIONS);
@@ -257,10 +254,8 @@ public class Duels extends JavaPlugin {
         pm.registerEvent(Event.Type.PLAYER_MOVE,    playerListener, Event.Priority.Highest, this);
         pm.registerEvent(Event.Type.PLAYER_KICK,    playerListener, Event.Priority.Monitor, this);
         pm.registerEvent(Event.Type.PLAYER_QUIT,    playerListener, Event.Priority.Monitor, this);
-        if(USE_ICONOMY){
-	        pm.registerEvent(Event.Type.PLUGIN_ENABLE,  serverListener, Event.Priority.Monitor, this);
-	        pm.registerEvent(Event.Type.PLUGIN_DISABLE, serverListener, Event.Priority.Monitor, this);
-        }
+	    pm.registerEvent(Event.Type.PLUGIN_ENABLE,  serverListener, Event.Priority.Monitor, this);
+	    pm.registerEvent(Event.Type.PLUGIN_DISABLE, serverListener, Event.Priority.Monitor, this);
         
         highscores.load();
         
@@ -313,7 +308,7 @@ public class Duels extends JavaPlugin {
 					player.sendMessage(getMessage("CONFIG"));
 					target.sendMessage(getMessage("CONFIG"));
 				}else{
-					duels.put(player, new Duel(player, target, iConomy));
+					duels.put(player, new Duel(player, target, Method));
 					player.sendMessage(MessageParser.parseMessage(messages.get("SELF_REQUEST"),"{PLAYER}",target.getDisplayName()));
 					target.sendMessage(MessageParser.parseMessage(messages.get("OTHER_REQUEST"),"{PLAYER}",player.getDisplayName()));
 				}
@@ -387,7 +382,7 @@ public class Duels extends JavaPlugin {
 						}
 					}else if(key.equalsIgnoreCase("stake")){
 						if(!getPerm(player, "duels.user.set.stake")){return true;}
-						if(this.iConomy!=null){
+						if(this.Method!=null){
 							int newStake = Integer.parseInt(value);
 							duel.setStake(player, newStake);
 						}
