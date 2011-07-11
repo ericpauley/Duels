@@ -51,6 +51,7 @@ public class Duels extends JavaPlugin {
 	public static boolean USE_PERMISSIONS = true;
 	public static boolean FORCE_FIELD_DURING = true;
 	public static boolean FORCE_FIELD_BEFORE = true;
+	public static boolean NO_DUEL_PVP = false;
 	public static String MESSAGE_PREFIX = "&4[DUELS]&f";
 	public static Map<String,String> messages = new HashMap<String,String>();
 	public static double RANKING_WEIGHT = 1;
@@ -116,6 +117,9 @@ public class Duels extends JavaPlugin {
     	//Whether or not to use permissions
     	USE_PERMISSIONS = config.getBoolean("usepermissions", true);
     	config.setProperty("usepermissions",USE_PERMISSIONS);
+    	//If people can pvp outside of duels
+    	NO_DUEL_PVP = config.getBoolean("noduelpvp", false);
+    	config.setProperty("noduelpvp",NO_DUEL_PVP);
     	//The prefix that goes in front of all messages
     	MESSAGE_PREFIX = config.getString("messageprefix", "&4[DUELS]&f");
     	config.setProperty("messageprefix",MESSAGE_PREFIX);

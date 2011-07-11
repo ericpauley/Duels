@@ -35,9 +35,10 @@ public class DuelsEntityListener extends EntityListener {
 					if(Duels.FORCE_PVP){
 						e.setCancelled(false);
 					}
-				}
-				else{
-					e.setCancelled(true);
+				}else{
+					if(!Duels.NO_DUEL_PVP){
+						e.setCancelled(true);
+					}
 				}
 			}
 			
