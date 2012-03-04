@@ -2,15 +2,16 @@ package zonedabone.Duels;
 
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerKickEvent;
-import org.bukkit.event.player.PlayerListener;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
 
-public class DuelsPlayerListener extends PlayerListener {
+public class DuelsPlayerListener implements Listener{
 	
 	public static Duels plugin;
 	
@@ -18,6 +19,7 @@ public class DuelsPlayerListener extends PlayerListener {
 		plugin = instance;
 	}
 
+	@EventHandler
 	public void onPlayerMove(PlayerMoveEvent e){
 		Player player = e.getPlayer();
 		Duel duel = Duels.duels.get(player);
@@ -40,6 +42,7 @@ public class DuelsPlayerListener extends PlayerListener {
 		}
 	}
 	
+	@EventHandler
 	public void onPlayerKick(PlayerKickEvent e){
 		Player player = e.getPlayer();
 		Duel duel = Duels.duels.get(player);
@@ -48,6 +51,7 @@ public class DuelsPlayerListener extends PlayerListener {
 		}
 	}
 	
+	@EventHandler
 	public void onPlayerQuit(PlayerQuitEvent e){
 		Player player = e.getPlayer();
 		Duel duel = Duels.duels.get(player);
@@ -65,6 +69,7 @@ public class DuelsPlayerListener extends PlayerListener {
 		}
 	}
 	
+	@EventHandler
 	public void onPlayerInteract(PlayerInteractEvent e){
 		Material type = e.getItem().getType();
 		Duel duel = Duels.duels.get(e.getPlayer());

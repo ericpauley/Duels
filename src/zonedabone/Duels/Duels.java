@@ -1,35 +1,33 @@
 package zonedabone.Duels;
 
 import java.io.File;
-import java.util.logging.Logger;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandSender;
-import org.bukkit.command.ConsoleCommandSender;
-import org.bukkit.entity.Player;
-import org.bukkit.event.Event;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.plugin.PluginManager;
-import org.bukkit.plugin.java.JavaPlugin;
-
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.bukkit.plugin.PluginDescriptionFile;
-import org.bukkit.util.config.Configuration;
-import com.nijiko.permissions.PermissionHandler;
-import com.nijikokun.bukkit.Permissions.Permissions;
-import org.bukkit.plugin.Plugin;
+import java.util.logging.Logger;
 
-import zonedabone.Duels.payment.Method;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
+import org.bukkit.command.ConsoleCommandSender;
+import org.bukkit.configuration.Configuration;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.plugin.PluginDescriptionFile;
+import org.bukkit.plugin.PluginManager;
+import org.bukkit.plugin.java.JavaPlugin;
+
+import com.nijikokun.register.payment.Methods;
 
 public class Duels extends JavaPlugin {
-	public static PermissionHandler permissionHandler = null;
 	
     //ClassListeners
 	private final DuelsEntityListener entityListener = new DuelsEntityListener(this);
 	private final DuelsPlayerListener playerListener = new DuelsPlayerListener(this);
-	private final DuelsServerListener serverListener = new DuelsServerListener(this);
     //ClassListeners
 	
 	//Data storage via HashMaps
@@ -39,7 +37,7 @@ public class Duels extends JavaPlugin {
 	public static List<String> DISABLED_WORLDS;
 	////Data storage via HashMaps
 	
-	public static Configuration highscores = new Configuration(new File("plugins/Duels/highscores.yml"));
+	public static FileConfiguration highscores;
 	
 	Logger log = Logger.getLogger("Minecraft");
 	
@@ -58,7 +56,7 @@ public class Duels extends JavaPlugin {
 	public static int DEFAULT_TOP_COUNT = 10;
 	//Configuration memory storage
 	
-	public Method Method = null;
+	public com.nijikokun.register.payment.Method Method = null;
 	
 	//Default duel settings
 	public static int STAKE = 0;
@@ -68,15 +66,7 @@ public class Duels extends JavaPlugin {
 	//Default duel settings
 
 	public boolean _getPerm(Player player, String node){
-		if(permissionHandler!=null){
-			return permissionHandler.has(player, node);
-		}else{
-			if(node.startsWith("duels.admin")){
-				return player.isOp();
-			}else{
-				return true;
-			}
-		}
+		return player.hasPermission(node);
 	}
 	
 	public boolean getPerm(Player player, String node){
@@ -90,186 +80,174 @@ public class Duels extends JavaPlugin {
 	public void onDisable() {
 		PluginDescriptionFile pdf = this.getDescription();
     	log.info(pdf.getName() + " version " + pdf.getVersion() + " DISABLED");
-    	highscores.save();
+    	try {
+			highscores.save(new File("plugins/Duels/highscores.yml"));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	public void onEnable() {
-		PluginDescriptionFile pdf = this.getDescription();
         PluginManager pm = this.getServer().getPluginManager();
+        this.Method = Methods.getMethod();
         
         //Set configuration values
-        Configuration config = getConfiguration();
+        Configuration config = this.getConfig();
         //Max distance between players.
     	MAX_DISTANCE = config.getInt("maxdistance", 20);
-    	config.setProperty("maxdistance",MAX_DISTANCE);
+    	config.set("maxdistance",MAX_DISTANCE);
     	//Max distance between players during the duel. (Instead of surrender)
     	FORCE_FIELD_DURING = config.getBoolean("forcefeild.during", false);
-    	config.setProperty("forcefeild.during",FORCE_FIELD_DURING);
+    	config.set("forcefeild.during",FORCE_FIELD_DURING);
     	//Max distance between players while preparing the duel. (Instead of cancel)
     	FORCE_FIELD_BEFORE = config.getBoolean("forcefeild.before", false);
-    	config.setProperty("forcefeild.before",FORCE_FIELD_BEFORE);
+    	config.set("forcefeild.before",FORCE_FIELD_BEFORE);
     	//Whether or not to override other pvp plugins during duels
     	FORCE_PVP = config.getBoolean("forcepvp", true);
-    	config.setProperty("forcepvp",FORCE_PVP);
+    	config.set("forcepvp",FORCE_PVP);
     	//Whether or not to use permissions
     	USE_PERMISSIONS = config.getBoolean("usepermissions", true);
-    	config.setProperty("usepermissions",USE_PERMISSIONS);
+    	config.set("usepermissions",USE_PERMISSIONS);
     	//If people can pvp outside of duels
     	NO_DUEL_PVP = config.getBoolean("noduelpvp", false);
-    	config.setProperty("noduelpvp",NO_DUEL_PVP);
+    	config.set("noduelpvp",NO_DUEL_PVP);
     	//The prefix that goes in front of all messages
     	MESSAGE_PREFIX = config.getString("messageprefix", "&4[DUELS]&f");
-    	config.setProperty("messageprefix",MESSAGE_PREFIX);
+    	config.set("messageprefix",MESSAGE_PREFIX);
     	//How to weight duel rankings
     	RANKING_WEIGHT = config.getDouble("highscores.weightedratings", 1);
-    	config.setProperty("highscores.weightedratings",RANKING_WEIGHT);
+    	config.set("highscores.weightedratings",RANKING_WEIGHT);
     	//The maximum ranking effect a duel can have
     	RANKING_MAGNITUDE = config.getDouble("highscores.ratingmagnitude", 10);
-    	config.setProperty("highscores.weightedratings",RANKING_MAGNITUDE);
+    	config.set("highscores.weightedratings",RANKING_MAGNITUDE);
     	//The starting rating for new players
     	STARTING_RATING = config.getDouble("highscores.weightedratings", 1000);
-    	config.setProperty("highscores.rankingmagnitude",STARTING_RATING);
+    	config.set("highscores.rankingmagnitude",STARTING_RATING);
     	//The starting rating for new players
     	DEFAULT_TOP_COUNT = config.getInt("highscores.defaulttopcount", 10);
-    	config.setProperty("highscores.defaulttopcount",DEFAULT_TOP_COUNT);
+    	config.set("highscores.defaulttopcount",DEFAULT_TOP_COUNT);
     	
     	//The default stake
     	STAKE = config.getInt("defaults.stake", 0);
-    	config.setProperty("defaults.stake",STAKE);
+    	config.set("defaults.stake",STAKE);
     	//The default wolves setting
     	WOLVES = config.getBoolean("defaults.wolves", true);
-    	config.setProperty("defaults.wolves",WOLVES);
+    	config.set("defaults.wolves",WOLVES);
     	//The default food setting
     	FOOD = config.getBoolean("defaults.food", true);
-    	config.setProperty("defaults.food",FOOD);
+    	config.set("defaults.food",FOOD);
     	//The default keepitems setting
     	KEEP_ITEMS = config.getBoolean("defaults.keepitems", true);
-    	config.setProperty("defaults.keepitems",KEEP_ITEMS);
-    	DISABLED_WORLDS = config.getStringList("disabledworlds", null);
+    	config.set("defaults.keepitems",KEEP_ITEMS);
+    	DISABLED_WORLDS = config.getStringList("disabledworlds");
     	
     	
     	//Message if sent from console
     	messages.put("CLIENT_ONLY", config.getString("messages.clientonly", "Duels can only be used from the client."));
-    	config.setProperty("messages.clientonly", messages.get("CLIENT_ONLY"));
+    	config.set("messages.clientonly", messages.get("CLIENT_ONLY"));
     	//Message if already in a duel
     	messages.put("ALREADY_DUELING", config.getString("messages.alreadydueling", "You are currently in a duel!"));
-    	config.setProperty("messages.alreadydueling", messages.get("ALREADY_DUELING"));
+    	config.set("messages.alreadydueling", messages.get("ALREADY_DUELING"));
     	//Message if not in a duel
     	messages.put("NOT_DUELING", config.getString("messages.notdueling", "You're not in a duel!"));
-    	config.setProperty("messages.notdueling", messages.get("NOT_DUELING"));
+    	config.set("messages.notdueling", messages.get("NOT_DUELING"));
     	//Message if player tries to duel self
     	messages.put("CANT_DUEL_SELF", config.getString("messages.cantduelself", "You can't duel yourself!"));
-    	config.setProperty("messages.cantduelself", messages.get("CANT_DUEL_SELF"));
+    	config.set("messages.cantduelself", messages.get("CANT_DUEL_SELF"));
     	//Message if target is offline
     	messages.put("PLAYER_OFFLINE", config.getString("messages.playeroffline", "{PLAYER} is offline."));
-    	config.setProperty("messages.playeroffline", messages.get("PLAYER_OFFLINE"));
+    	config.set("messages.playeroffline", messages.get("PLAYER_OFFLINE"));
     	//Message if target is not within range
     	messages.put("NOT_IN_RANGE", config.getString("messages.notinrange", "{PLAYER} is not in range. ({RANGE} blocks)"));
-    	config.setProperty("messages.notinrange", messages.get("NOT_IN_RANGE"));
+    	config.set("messages.notinrange", messages.get("NOT_IN_RANGE"));
     	//Message when player accepts an incoming duel request.
     	messages.put("SELF_ACCEPT", config.getString("messages.selfaccept", "Accepted {PLAYER}'s duel."));
-    	config.setProperty("messages.selfaccept", messages.get("SELF_ACCEPT"));
+    	config.set("messages.selfaccept", messages.get("SELF_ACCEPT"));
     	//Message when target accepts the duel request
     	messages.put("OTHER_ACCEPT", config.getString("messages.otheraccept", "{PLAYER} has accepted your duel request."));
-    	config.setProperty("messages.otheraccept", messages.get("OTHER_ACCEPT"));
+    	config.set("messages.otheraccept", messages.get("OTHER_ACCEPT"));
     	//Message sent to both players when config mode is entered
     	messages.put("CONFIG", config.getString("messages.config", "set duel options with /duel set <option> <on/off>"));
-    	config.setProperty("messages.config", messages.get("CONFIG"));
+    	config.set("messages.config", messages.get("CONFIG"));
     	//Message sent to starter on /duel challenge <player>
     	messages.put("SELF_REQUEST", config.getString("messages.selfrequest", "Duel request sent to {PLAYER}."));
-    	config.setProperty("messages.selfrequest", messages.get("SELF_REQUEST"));
+    	config.set("messages.selfrequest", messages.get("SELF_REQUEST"));
     	//Message sent to target on /duel challenge <player>
     	messages.put("OTHER_REQUEST", config.getString("messages.otherrequest", "{PLAYER} has requested to duel with you."));
-    	config.setProperty("messages.otherrequest", messages.get("OTHER_REQUEST"));
+    	config.set("messages.otherrequest", messages.get("OTHER_REQUEST"));
     	//Message sent when a player tries to cancel a duel in progress
     	messages.put("CANCEL_STARTED", config.getString("messages.cancelstarted", "You can't cancel a duel in progress! Use '/duel surrender' instead."));
-    	config.setProperty("messages.cancelstarted", messages.get("CANCEL_STARTED"));
+    	config.set("messages.cancelstarted", messages.get("CANCEL_STARTED"));
     	//Message sent when a player surrenders a duel that hasn't started
     	messages.put("SURRENDER_NOT_STARTED", config.getString("messages.surrendernotstarted", "The duel has not started yet. Use '/duel cancel' instead."));
-    	config.setProperty("messages.surrendernotstarted", messages.get("SURRENDER_NOT_STARTED"));
+    	config.set("messages.surrendernotstarted", messages.get("SURRENDER_NOT_STARTED"));
     	//Message sent when a player tries to configure a duel at the wrong time
     	messages.put("BLOCK_CONFIG", config.getString("messages.blockconfig", "Now is not the time to change duel settings."));
-    	config.setProperty("messages.blockconfig", messages.get("BLOCK_CONFIG"));
+    	config.set("messages.blockconfig", messages.get("BLOCK_CONFIG"));
     	//Message sent when a player is ready to start
     	messages.put("PLAYER_READY", config.getString("messages.playerready", "{PLAYER} is ready to start the duel."));
-    	config.setProperty("messages.playerready", messages.get("PLAYER_READY"));
+    	config.set("messages.playerready", messages.get("PLAYER_READY"));
     	//Message sent when a player is ready to start
     	messages.put("DUEL_START", config.getString("messages.duelstart", "FIGHT TO THE DEATH!"));
-    	config.setProperty("messages.duelstart", messages.get("DUEL_START"));
+    	config.set("messages.duelstart", messages.get("DUEL_START"));
     	//Message sent when a player is ready to start
     	messages.put("DUEL_CANCEL", config.getString("messages.duelcancel", "The duel has been canceled."));
-    	config.setProperty("messages.duelcancel", messages.get("DUEL_CANCEL"));
+    	config.set("messages.duelcancel", messages.get("DUEL_CANCEL"));
     	//Message sent when a player is ready to start
     	messages.put("DUEL_LOSE", config.getString("messages.duellose", "You lost the duel!"));
-    	config.setProperty("messages.duellose", messages.get("DUEL_LOSE"));
+    	config.set("messages.duellose", messages.get("DUEL_LOSE"));
     	//Message sent when a player is ready to start
     	messages.put("DUEL_WIN", config.getString("messages.duelwin", "You won the duel!"));
-    	config.setProperty("messages.duelwin", messages.get("DUEL_WIN"));
+    	config.set("messages.duelwin", messages.get("DUEL_WIN"));
     	//Message sent when a player is ready to start
     	messages.put("SET_KEEP_ITEMS", config.getString("messages.setkeepitems", "You will keep you items if you die."));
-    	config.setProperty("messages.setkeepitems", messages.get("SET_KEEP_ITEMS"));
+    	config.set("messages.setkeepitems", messages.get("SET_KEEP_ITEMS"));
     	//Message sent when a player is ready to start
     	messages.put("SET_LOSE_ITEMS", config.getString("messages.setloseitems", "Your opponent will get your items if you die."));
-    	config.setProperty("messages.setloseitems", messages.get("SET_LOSE_ITEMS"));
+    	config.set("messages.setloseitems", messages.get("SET_LOSE_ITEMS"));
     	//Message sent when a player sets a new stake
     	messages.put("SET_STAKE", config.getString("messages.setstake", "{PLAYER} set their stake to {STAKE}."));
-    	config.setProperty("messages.setstake", messages.get("SET_STAKE"));
+    	config.set("messages.setstake", messages.get("SET_STAKE"));
     	//Message sent when a player can't afford the stake
     	messages.put("BLOCK_SET_STAKE", config.getString("messages.blocksetstake", "You can't afford to set your stake to that."));
-    	config.setProperty("messages.blocksetstake", messages.get("BLOCK_SET_STAKE"));
+    	config.set("messages.blocksetstake", messages.get("BLOCK_SET_STAKE"));
     	//Message sent when a player enables wolves
     	messages.put("WOLF_ENABLE", config.getString("messages.wolfenable", "Wolves are enabled."));
-    	config.setProperty("messages.wolfenable", messages.get("WOLF_ENABLE"));
+    	config.set("messages.wolfenable", messages.get("WOLF_ENABLE"));
     	//Message sent when a player disables wolves
     	messages.put("WOLF_DISABLE", config.getString("messages.wolfdisable", "Wolves are disabled."));
-    	config.setProperty("messages.wolfdisable", messages.get("WOLF_DISABLE"));
+    	config.set("messages.wolfdisable", messages.get("WOLF_DISABLE"));
     	//Message sent when a player enables food
     	messages.put("FOOD_ENABLE", config.getString("messages.foodenable", "Food is enabled."));
-    	config.setProperty("messages.foodenable", messages.get("FOOD_ENABLE"));
+    	config.set("messages.foodenable", messages.get("FOOD_ENABLE"));
     	//Message sent when a player disables food
     	messages.put("FOOD_DISABLE", config.getString("messages.fooddisable", "Food is disabled."));
-    	config.setProperty("messages.fooddisable", messages.get("FOOD_DISABLE"));
+    	config.set("messages.fooddisable", messages.get("FOOD_DISABLE"));
     	//Message sent when a player is blocked from using food
     	messages.put("BLOCK_FOOD", config.getString("messages.blockfood", "Food is disabled in this duel!"));
-    	config.setProperty("messages.blockfood", messages.get("BLOCK_FOOD"));
+    	config.set("messages.blockfood", messages.get("BLOCK_FOOD"));
     	//Message sent when a player trys to do something without permission
     	messages.put("NO_PERMS", config.getString("messages.noperms", "You don't have permission to do that."));
-    	config.setProperty("messages.noperms", messages.get("NO_PERMS"));
+    	config.set("messages.noperms", messages.get("NO_PERMS"));
     	//Message sent when a player trys to do something without permission
     	messages.put("ALREADY_CONFIRMED", config.getString("messages.alreadyconfirmed", "You've already confirmed the settings in this duel."));
-    	config.setProperty("messages.alreadyconfirmed", messages.get("ALREADY_CONFIRMED"));
+    	config.set("messages.alreadyconfirmed", messages.get("ALREADY_CONFIRMED"));
     	//Message sent when a player trys to do something without permission
     	messages.put("NOT_CONFIG", config.getString("messages.notconfig", "Your opponent is not ready for that."));
-    	config.setProperty("messages.notconfig", messages.get("NOT_CONFIG"));
+    	config.set("messages.notconfig", messages.get("NOT_CONFIG"));
     	//Message sent when a player trys to do something in a disabled world
     	messages.put("WORLD_DISABLED", config.getString("messages.worlddisabled", "You cannot duel in this world."));
-    	config.setProperty("messages.worlddisabled", messages.get("WORLD_DISABLED"));
-    	config.save();
+    	config.set("messages.worlddisabled", messages.get("WORLD_DISABLED"));
+    	this.saveConfig();
         //Set configuration values
         
         
         //Register Events
-        pm.registerEvent(Event.Type.ENTITY_DAMAGE,  entityListener, Event.Priority.Highest,  this);
-        pm.registerEvent(Event.Type.ENTITY_DEATH,  entityListener, Event.Priority.Highest,  this);
-        pm.registerEvent(Event.Type.PLAYER_MOVE,    playerListener, Event.Priority.Highest, this);
-        pm.registerEvent(Event.Type.PLAYER_KICK,    playerListener, Event.Priority.Monitor, this);
-        pm.registerEvent(Event.Type.PLAYER_QUIT,    playerListener, Event.Priority.Monitor, this);
-	    pm.registerEvent(Event.Type.PLUGIN_ENABLE,  serverListener, Event.Priority.Monitor, this);
-	    pm.registerEvent(Event.Type.PLUGIN_DISABLE, serverListener, Event.Priority.Monitor, this);
+        pm.registerEvents(entityListener, this);
+        pm.registerEvents(playerListener, this);
         
-        highscores.load();
-        
-        //Register Events
-        if(USE_PERMISSIONS){
-        	setupPermissions();
-        }
-        
-        if(permissionHandler==null){
-        	log.info(pdf.getName() + " version " + pdf.getVersion() + " ENABLED (OP mode)");
-        }else{
-        	log.info(pdf.getName() + " version " + pdf.getVersion() + " ENABLED (Using permissions)");
-        }
-    	
+        highscores = YamlConfiguration.loadConfiguration(new File("plugins/Duels/highscores.yml"));
 	}
 	
 	public static String getMessage(String msg){
@@ -404,7 +382,7 @@ public class Duels extends JavaPlugin {
 				}
 				return true;
 			}else if(subcommand.equalsIgnoreCase("highscores")){
-				List<String> players = highscores.getKeys();
+				List<String> players = new ArrayList<String>(highscores.getKeys(false));
 				Collections.sort(players, new HighscoreComparator());
 				player.sendMessage("Top "+Integer.toString(Math.max(DEFAULT_TOP_COUNT, players.size()))+" Duelists:");
 				for(int i = 0;i<Math.max(DEFAULT_TOP_COUNT, players.size());i++){
@@ -415,16 +393,6 @@ public class Duels extends JavaPlugin {
 			
 		}
 		return false;
-	}
-	
-	private void setupPermissions() {
-	    Plugin permissionsPlugin = this.getServer().getPluginManager().getPlugin("Permissions");
-
-	    if (permissionHandler == null) {
-	        if (permissionsPlugin != null) {
-	            permissionHandler = ((Permissions) permissionsPlugin).getHandler();
-	        }
-	    }
 	}
 }
 

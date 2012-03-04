@@ -3,14 +3,15 @@ package zonedabone.Duels;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Tameable;
-import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
-import org.bukkit.event.entity.EntityListener;
 import org.bukkit.event.entity.EntityTargetEvent;
 import org.bukkit.inventory.ItemStack;
 
-public class DuelsEntityListener extends EntityListener {
+public class DuelsEntityListener implements Listener{
 	
 	public static Duels plugin;
 	
@@ -18,6 +19,7 @@ public class DuelsEntityListener extends EntityListener {
 		plugin = instance;
 	}
 
+	@EventHandler
 	public void onEntityDamage(EntityDamageEvent e){
 		
 		if(e instanceof EntityDamageByEntityEvent){
@@ -45,6 +47,7 @@ public class DuelsEntityListener extends EntityListener {
 		}
 	}
 	
+	@EventHandler
 	public void onEntityDeath(EntityDeathEvent e){
 		if(e.getEntity() instanceof Player){
 			Player player = (Player) e.getEntity();

@@ -7,11 +7,7 @@ import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
-import zonedabone.Duels.payment.Method;
-
-import com.iConomy.*;
-import com.iConomy.system.Holdings;
-import java.lang.Math;
+import com.nijikokun.register.payment.Method;
 
 public class Duel{
 	public Player starter;
@@ -66,8 +62,7 @@ public class Duel{
 		starter.sendMessage(Duels.getMessage("DUEL_CANCEL"));
 		if(method != null&&targetStake!=0&&starterStake!=0){
 			method.getAccount(starter.getName()).add(starterStake);
-			Holdings targetBalance = iConomy.getAccount(target.getDisplayName()).getHoldings();
-			targetBalance.add(targetStake);
+			method.getAccount(target.getName()).add(targetStake);
 		}
 		Duels.duels.remove(starter);
 	}
@@ -95,12 +90,12 @@ public class Duel{
 			outcome = 1;
 		}
 		double change = Duels.RANKING_MAGNITUDE*(outcome-winnerChance);
-		Duels.highscores.setProperty(winnerName+".rating", winnerRating+change);
-		Duels.highscores.setProperty(loserName+".rating", loserRating-change);
-		Duels.highscores.setProperty(winnerName+".duels", Duels.highscores.getInt(winnerName+".duels", 0)+1);
-		Duels.highscores.setProperty(loserName+".duels", Duels.highscores.getInt(loserName+".duels", 0)+1);
-		Duels.highscores.setProperty(winnerName+".wins", Duels.highscores.getInt(winnerName+".wins", 0)+1);
-		Duels.highscores.setProperty(loserName+".losses", Duels.highscores.getInt(loserName+".losses", 0)+1);
+		Duels.highscores.set(winnerName+".rating", winnerRating+change);
+		Duels.highscores.set(loserName+".rating", loserRating-change);
+		Duels.highscores.set(winnerName+".duels", Duels.highscores.getInt(winnerName+".duels", 0)+1);
+		Duels.highscores.set(loserName+".duels", Duels.highscores.getInt(loserName+".duels", 0)+1);
+		Duels.highscores.set(winnerName+".wins", Duels.highscores.getInt(winnerName+".wins", 0)+1);
+		Duels.highscores.set(loserName+".losses", Duels.highscores.getInt(loserName+".losses", 0)+1);
 		//Set Highscores
 		if(this.method!=null){
 			method.getAccount(winner.getName()).add(starterStake+targetStake);
