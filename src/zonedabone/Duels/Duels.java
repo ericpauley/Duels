@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
+import net.milkbowl.vault.economy.Economy;
+
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
@@ -19,9 +21,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginManager;
+import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
-
-import com.nijikokun.register.payment.Methods;
 
 public class Duels extends JavaPlugin {
 	
@@ -56,7 +57,7 @@ public class Duels extends JavaPlugin {
 	public static int DEFAULT_TOP_COUNT = 10;
 	//Configuration memory storage
 	
-	public com.nijikokun.register.payment.Method Method = null;
+	public static Economy economy = null;
 	
 	//Default duel settings
 	public static int STAKE = 0;
@@ -90,7 +91,7 @@ public class Duels extends JavaPlugin {
 
 	public void onEnable() {
         PluginManager pm = this.getServer().getPluginManager();
-        this.Method = Methods.getMethod();
+        setupEconomy();
         
         //Set configuration values
         Configuration config = this.getConfig();
@@ -250,6 +251,16 @@ public class Duels extends JavaPlugin {
         highscores = YamlConfiguration.loadConfiguration(new File("plugins/Duels/highscores.yml"));
 	}
 	
+	private Boolean setupEconomy()
+    {
+        RegisteredServiceProvider<Economy> economyProvider = getServer().getServicesManager().getRegistration(net.milkbowl.vault.economy.Economy.class);
+        if (economyProvider != null) {
+            economy = economyProvider.getProvider();
+        }
+
+        return (economy != null);
+    }
+	
 	public static String getMessage(String msg){
 		return MessageParser.parseMessage(messages.get(msg));
 	}
@@ -286,7 +297,7 @@ public class Duels extends JavaPlugin {
 					player.sendMessage(getMessage("CONFIG"));
 					target.sendMessage(getMessage("CONFIG"));
 				}else{
-					duels.put(player, new Duel(player, target, Method));
+					duels.put(player, new Duel(player, target));
 					player.sendMessage(MessageParser.parseMessage(messages.get("SELF_REQUEST"),"{PLAYER}",target.getDisplayName()));
 					target.sendMessage(MessageParser.parseMessage(messages.get("OTHER_REQUEST"),"{PLAYER}",player.getDisplayName()));
 				}
@@ -360,7 +371,7 @@ public class Duels extends JavaPlugin {
 						}
 					}else if(key.equalsIgnoreCase("stake")){
 						if(!getPerm(player, "duels.user.set.stake")){return true;}
-						if(this.Method!=null){
+						if(economy!=null){
 							int newStake = Integer.parseInt(value);
 							duel.setStake(player, newStake);
 						}

@@ -7,8 +7,6 @@ import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
-import com.nijikokun.register.payment.Method;
-
 public class Duel{
 	public Player starter;
 	public Player target;
@@ -19,14 +17,12 @@ public class Duel{
 	int targetStake = Duels.STAKE;
 	boolean wolves = Duels.WOLVES;
 	boolean food = Duels.WOLVES;
-	Method method = null;
 	
-	public Duel(Player starter, Player target, Method method){
+	public Duel(Player starter, Player target){
 		this.starter = starter;
 		this.target = target;
 		starterstage = 1;
 		targetstage = 0;
-		this.method = method;
 	}
 	
 	public void accept(){
@@ -60,9 +56,9 @@ public class Duel{
 			Duels.duels.remove(target);
 		}
 		starter.sendMessage(Duels.getMessage("DUEL_CANCEL"));
-		if(method != null&&targetStake!=0&&starterStake!=0){
-			method.getAccount(starter.getName()).add(starterStake);
-			method.getAccount(target.getName()).add(targetStake);
+		if(Duels.economy != null&&targetStake!=0&&starterStake!=0){
+			Duels.economy.depositPlayer(starter.getName(), starterStake);
+			Duels.economy.depositPlayer(target.getName(), targetStake);
 		}
 		Duels.duels.remove(starter);
 	}
@@ -97,8 +93,8 @@ public class Duel{
 		Duels.highscores.set(winnerName+".wins", Duels.highscores.getInt(winnerName+".wins", 0)+1);
 		Duels.highscores.set(loserName+".losses", Duels.highscores.getInt(loserName+".losses", 0)+1);
 		//Set Highscores
-		if(this.method!=null){
-			method.getAccount(winner.getName()).add(starterStake+targetStake);
+		if(Duels.economy!=null){
+			Duels.economy.depositPlayer(winner.getName(), starterStake+targetStake);
 		}
 		Duels.duels.remove(winner);
 		Duels.duels.remove(loser);
@@ -170,11 +166,11 @@ public class Duel{
 	}
 	
 	public void setStake(Player player, int newStake){
-		String message = MessageParser.parseMessage(Duels.messages.get("PLAYER_READY"), "{PLAYER}", player.getDisplayName(), "{STAKE}", method.format(newStake));
+		String message = MessageParser.parseMessage(Duels.messages.get("PLAYER_READY"), "{PLAYER}", player.getDisplayName(), "{STAKE}", Duels.economy.format(newStake));
 		if(player==starter){
 			int change = newStake-starterStake;
-			if(method.getAccount(player.getName()).hasEnough(change)){
-				method.getAccount(player.getName()).subtract(change);
+			if(Duels.economy.has(player.getName(), change)){
+				Duels.economy.withdrawPlayer(player.getName(), change);
 				starterStake = newStake;
 				starter.sendMessage(message);
 				target.sendMessage(message);
@@ -183,8 +179,8 @@ public class Duel{
 			}
 		}else{
 			int change = newStake-targetStake;
-			if(method.getAccount(player.getName()).hasEnough(change)){
-				method.getAccount(player.getName()).subtract(change);
+			if(Duels.economy.has(player.getName(), change)){
+				Duels.economy.withdrawPlayer(player.getName(), change);
 				targetStake = newStake;
 				starter.sendMessage(message);
 				target.sendMessage(message);
