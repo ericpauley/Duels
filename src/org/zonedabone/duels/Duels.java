@@ -1,4 +1,4 @@
-package zonedabone.Duels;
+package org.zonedabone.duels;
 
 import java.io.File;
 import java.io.IOException;

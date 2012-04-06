@@ -1,4 +1,4 @@
-package zonedabone.Duels;
+package org.zonedabone.duels;
 
 import java.util.Comparator;
 

@@ -1,4 +1,4 @@
-package zonedabone.Duels;
+package org.zonedabone.duels;
 
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
