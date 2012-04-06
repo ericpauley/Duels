@@ -1,5 +1,5 @@
 name: Duels
-main: zonedabone.Duels.Duels
+main: org.zonedabone.duels.Duels
 version: 0.8.1
 depend: [Vault]
 commands:
