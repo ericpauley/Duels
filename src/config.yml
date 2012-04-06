@@ -5,7 +5,6 @@ forcefeild:
 forcepvp: true
 usepermissions: true
 noduelpvp: false
-messageprefix: '&4[DUELS]&f'
 highscores:
   weightedratings: 10.0
   rankingmagnitude: 10.0

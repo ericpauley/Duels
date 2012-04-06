@@ -33,10 +33,10 @@ public class Duel {
 	
 	public void cancel() {
 		if (targetstage != 0) {
-			target.sendMessage(Duels.getMessage("DUEL_CANCEL"));
+			MessageManager.sendMessage(target,"success.duel_cancel");
 			Duels.duels.remove(target);
 		}
-		starter.sendMessage(Duels.getMessage("DUEL_CANCEL"));
+		MessageManager.sendMessage(starter,"success.duel_cancel");
 		if (Duels.economy != null && targetStake != 0 && starterStake != 0) {
 			Duels.economy.depositPlayer(starter.getName(), starterStake);
 			Duels.economy.depositPlayer(target.getName(), targetStake);
@@ -78,18 +78,18 @@ public class Duel {
 		if (player == starter) {
 			starterstage = 2;
 			if (targetstage == 1) {
-				target.sendMessage(MessageParser.parseMessage(Duels.messages.get("PLAYER_READY"), "{PLAYER}", starter.getDisplayName()));
+				MessageManager.sendMessage(target, "success.player_ready", "p", starter.getDisplayName());
 			} else {
-				target.sendMessage(Duels.getMessage("DUEL_START"));
-				starter.sendMessage(Duels.getMessage("DUEL_START"));
+				MessageManager.sendMessage(target, "success.duel_start");
+				MessageManager.sendMessage(starter, "success.duel_start");
 			}
 		} else {
 			targetstage = 2;
 			if (starterstage == 1) {
-				starter.sendMessage(MessageParser.parseMessage(Duels.messages.get("PLAYER_READY"), "{PLAYER}", target.getDisplayName()));
+				MessageManager.sendMessage(starter,"success.player_ready", "p", target.getDisplayName());
 			} else {
-				target.sendMessage(Duels.getMessage("DUEL_START"));
-				starter.sendMessage(Duels.getMessage("DUEL_START"));
+				MessageManager.sendMessage(target,"success.duel_start");
+				MessageManager.sendMessage(target, "success.duel_start");
 			}
 		}
 	}
@@ -110,8 +110,8 @@ public class Duel {
 		} else {
 			winner = starter;
 		}
-		loser.sendMessage(Duels.getMessage("DUEL_LOSE"));
-		winner.sendMessage(Duels.getMessage("DUEL_WIN"));
+		MessageManager.sendMessage(loser,"success.duel_lose");
+		MessageManager.sendMessage(winner,"success.duel_win");
 		// Set highscores
 		String winnerName = winner.getName();
 		String loserName = loser.getName();
@@ -161,11 +161,11 @@ public class Duel {
 		if (value != food) {
 			food = value;
 			if (food) {
-				starter.sendMessage(Duels.getMessage("FOOD_ENABLE"));
-				target.sendMessage(Duels.getMessage("FOOD_ENABLE"));
+				MessageManager.sendMessage(starter,"config.food_enable");
+				MessageManager.sendMessage(target,"config.food_enable");
 			} else {
-				starter.sendMessage(Duels.getMessage("FOOD_DISABLE"));
-				target.sendMessage(Duels.getMessage("FOOD_DISABLE"));
+				MessageManager.sendMessage(starter,"config.food_disable");
+				MessageManager.sendMessage(target,"config.food_disable");
 			}
 		}
 	}
@@ -176,16 +176,16 @@ public class Duel {
 		}
 		keepItems = value;
 		if (value) {
-			starter.sendMessage(Duels.getMessage("SET_KEEP_ITEMS"));
-			target.sendMessage(Duels.getMessage("SET_KEEP_ITEMS"));
+			MessageManager.sendMessage(starter,"config.set_keep_items");
+			MessageManager.sendMessage(target,"config.set_keep_items");
 		} else {
-			starter.sendMessage(Duels.getMessage("SET_LOSE_ITEMS"));
-			target.sendMessage(Duels.getMessage("SET_LOSE_ITEMS"));
+			MessageManager.sendMessage(starter,"config.set_lose_items");
+			MessageManager.sendMessage(target,"config.set_lose_items");
 		}
 	}
 	
 	public void setStake(Player player, int newStake) {
-		String message = MessageParser.parseMessage(Duels.messages.get("PLAYER_READY"), "{PLAYER}", player.getDisplayName(), "{STAKE}", Duels.economy.format(newStake));
+		String message = MessageManager.parseMessage("success.player_ready", "p", player.getDisplayName(), "s", Duels.economy.format(newStake));
 		if (player == starter) {
 			int change = newStake - starterStake;
 			if (Duels.economy.has(player.getName(), change)) {
@@ -194,7 +194,7 @@ public class Duel {
 				starter.sendMessage(message);
 				target.sendMessage(message);
 			} else {
-				player.sendMessage(Duels.getMessage("BLOCK_SET_STAKE"));
+				MessageManager.sendMessage(player,"failure.block_set_stake");
 			}
 		} else {
 			int change = newStake - targetStake;
@@ -204,7 +204,7 @@ public class Duel {
 				starter.sendMessage(message);
 				target.sendMessage(message);
 			} else {
-				player.sendMessage(Duels.getMessage("BLOCK_SET_STAKE"));
+				MessageManager.sendMessage(player,"failure.block_set_stake");
 			}
 		}
 	}
@@ -213,11 +213,11 @@ public class Duel {
 		if (value != wolves) {
 			wolves = value;
 			if (wolves) {
-				starter.sendMessage(Duels.getMessage("WOLF_ENABLE"));
-				target.sendMessage(Duels.getMessage("WOLF_ENABLE"));
+				MessageManager.sendMessage(starter,"config.wolf_enable");
+				MessageManager.sendMessage(target,"config.wolf_enable");
 			} else {
-				starter.sendMessage(Duels.getMessage("WOLF_DISABLE"));
-				target.sendMessage(Duels.getMessage("WOLF_DISABLE"));
+				MessageManager.sendMessage(starter,"config.wolf_disable");
+				MessageManager.sendMessage(target,"config.wolf_disable");
 			}
 		}
 	}

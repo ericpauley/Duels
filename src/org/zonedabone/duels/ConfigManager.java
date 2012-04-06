@@ -1,12 +1,11 @@
 package org.zonedabone.duels;
 
+import java.io.File;
 import java.util.List;
 
 import org.bukkit.configuration.Configuration;
 
-
 public class ConfigManager {
-	
 	
 	public static int MAX_DISTANCE;
 	public static boolean FORCE_FIELD_DURING;
@@ -23,8 +22,12 @@ public class ConfigManager {
 	public static boolean FOOD;
 	public static boolean KEEP_ITEMS;
 	public static List<String> DISABLED_WORLDS;
-
-	public static void loadConfig(Duels plugin){
+	
+	public static void loadConfig(Duels plugin) {
+		if (!(new File(plugin.getDataFolder(), "config.yml")).exists()) {
+			plugin.getLogger().info("Creating default config.yml.");
+			plugin.saveResource("config.yml", true);
+		}
 		Configuration config = plugin.getConfig();
 		MAX_DISTANCE = config.getInt("maxdistance", 20);
 		// Max distance between players during the duel. (Instead of surrender)
@@ -53,7 +56,7 @@ public class ConfigManager {
 		FOOD = config.getBoolean("defaults.food", true);
 		// The default keepitems setting
 		KEEP_ITEMS = config.getBoolean("defaults.keepitems", true);
-		//Worlds to ignore completely
+		// Worlds to ignore completely
 		DISABLED_WORLDS = config.getStringList("disabledworlds");
 	}
 }

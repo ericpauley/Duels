@@ -29,7 +29,7 @@ public class DuelsPlayerListener implements Listener {
 		if (duel != null && duel.targetstage == 2 && duel.starterstage == 2 && !duel.food) {
 			if (e.getAction() == Action.RIGHT_CLICK_AIR || e.getAction() == Action.RIGHT_CLICK_BLOCK) {
 				if (type == Material.PORK || type == Material.GRILLED_PORK || type == Material.COOKED_FISH || type == Material.RAW_FISH || type == Material.COOKIE || type == Material.BREAD || type == Material.MUSHROOM_SOUP || type == Material.GOLDEN_APPLE || type == Material.APPLE || e.getClickedBlock().getType() == Material.CAKE_BLOCK) {
-					e.getPlayer().sendMessage(Duels.getMessage("BLOCK_FOOD"));
+					MessageManager.sendMessage(e.getPlayer(), "failure.block_food");
 					e.setCancelled(true);
 				}
 			}
