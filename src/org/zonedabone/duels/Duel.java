@@ -10,15 +10,15 @@ import org.bukkit.inventory.ItemStack;
 
 public class Duel {
 	
-	boolean food = Duels.WOLVES;
-	public boolean keepItems = Duels.KEEP_ITEMS;
+	boolean food = ConfigManager.WOLVES;
+	public boolean keepItems = ConfigManager.KEEP_ITEMS;
 	public Player starter;
 	public int starterstage;
-	int starterStake = Duels.STAKE;
+	int starterStake = ConfigManager.STAKE;
 	public Player target;
 	public int targetstage;
-	int targetStake = Duels.STAKE;
-	boolean wolves = Duels.WOLVES;
+	int targetStake =ConfigManager.STAKE;
+	boolean wolves = ConfigManager.WOLVES;
 	
 	public Duel(Player starter, Player target) {
 		this.starter = starter;
@@ -55,15 +55,15 @@ public class Duel {
 		} else {
 			otherLoc = starter.getLocation();
 		}
-		if (newLoc == null || otherLoc == null || newLoc.getWorld() != otherLoc.getWorld() || otherLoc.distance(newLoc) > Duels.MAX_DISTANCE) {
+		if (newLoc == null || otherLoc == null || newLoc.getWorld() != otherLoc.getWorld() || otherLoc.distance(newLoc) > ConfigManager.MAX_DISTANCE) {
 			if (starterstage == 1 && targetstage == 1) {
-				if (Duels.FORCE_FIELD_BEFORE) {
+				if (ConfigManager.FORCE_FIELD_BEFORE) {
 					e.setCancelled(true);
 				} else {
 					cancel();
 				}
 			} else if (starterstage == 2 && targetstage == 2) {
-				if (Duels.FORCE_FIELD_DURING) {
+				if (ConfigManager.FORCE_FIELD_DURING) {
 					e.setCancelled(true);
 				} else {
 					lose(mover, false);
@@ -115,17 +115,17 @@ public class Duel {
 		// Set highscores
 		String winnerName = winner.getName();
 		String loserName = loser.getName();
-		double winnerRating = Duels.highscores.getDouble(winnerName + ".rating", Duels.STARTING_RATING);
-		double loserRating = Duels.highscores.getDouble(loserName + ".rating", Duels.STARTING_RATING);
+		double winnerRating = Duels.highscores.getDouble(winnerName + ".rating", ConfigManager.STARTING_RATING);
+		double loserRating = Duels.highscores.getDouble(loserName + ".rating", ConfigManager.STARTING_RATING);
 		double winnerChance = 1 / (1 + Math.pow(10, (loserRating - winnerRating) / 400));
 		double outcome;
-		if (died && Duels.RANKING_WEIGHT != 0) {
+		if (died && ConfigManager.RANKING_WEIGHT != 0) {
 			outcome = (double) winner.getHealth() / 20;
-			outcome = Math.pow(outcome, 1 / Duels.RANKING_WEIGHT);
+			outcome = Math.pow(outcome, 1 / ConfigManager.RANKING_WEIGHT);
 		} else {
 			outcome = 1;
 		}
-		double change = Duels.RANKING_MAGNITUDE * (outcome - winnerChance);
+		double change = ConfigManager.RANKING_MAGNITUDE * (outcome - winnerChance);
 		Duels.highscores.set(winnerName + ".rating", winnerRating + change);
 		Duels.highscores.set(loserName + ".rating", loserRating - change);
 		Duels.highscores.set(winnerName + ".duels", Duels.highscores.getInt(winnerName + ".duels", 0) + 1);

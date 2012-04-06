@@ -27,33 +27,17 @@ import org.bukkit.plugin.java.JavaPlugin;
 public class Duels extends JavaPlugin {
 	
 	public static Map<Player, ItemStack[]> armorStore = new HashMap<Player, ItemStack[]>();
-	public static int DEFAULT_TOP_COUNT = 10;
 	// Configuration memory storage
-	public static List<String> DISABLED_WORLDS;
-	// //Data storage via HashMaps
 	// Data storage via HashMaps
 	public static Map<Player, Duel> duels = new HashMap<Player, Duel>();
 	public static Economy economy = null;
-	public static boolean FOOD = true;
-	public static boolean FORCE_FIELD_BEFORE = true;
-	public static boolean FORCE_FIELD_DURING = true;
-	public static boolean FORCE_PVP = true;
 	public static FileConfiguration highscores;
 	public static Map<Player, ItemStack[]> itemStore = new HashMap<Player, ItemStack[]>();
-	public static boolean KEEP_ITEMS = true;
 	// Default duel settings
 	// Configuration memory storage
-	public static int MAX_DISTANCE = 20;
 	public static String MESSAGE_PREFIX = "&4[DUELS]&f";
 	public static Map<String, String> messages = new HashMap<String, String>();
-	public static boolean NO_DUEL_PVP = false;
-	public static double RANKING_MAGNITUDE = 10;
-	public static double RANKING_WEIGHT = 1;
 	// Default duel settings
-	public static int STAKE = 0;
-	public static double STARTING_RATING = 1000;
-	public static boolean USE_PERMISSIONS = true;
-	public static boolean WOLVES = true;
 	
 	public static String getMessage(String msg) {
 		return MessageParser.parseMessage(messages.get(msg));
@@ -87,7 +71,7 @@ public class Duels extends JavaPlugin {
 				return true;
 			}
 			Player player = (Player) sender;
-			if (DISABLED_WORLDS.contains(player.getWorld().getName())) {
+			if (ConfigManager.DISABLED_WORLDS.contains(player.getWorld().getName())) {
 				player.sendMessage(getMessage("WORLD_DISABLED"));
 				return true;
 			}
@@ -103,8 +87,8 @@ public class Duels extends JavaPlugin {
 					sender.sendMessage(getMessage("CANT_DUEL_SELF"));
 				} else if (target == null || !target.isOnline()) {
 					sender.sendMessage(MessageParser.parseMessage(messages.get("PLAYER_OFFLINE"), "{PLAYER}", args[1]));
-				} else if (player.getLocation().distance(target.getLocation()) > MAX_DISTANCE) {
-					player.sendMessage(MessageParser.parseMessage(messages.get("NOT_IN_RANGE"), "{PLAYER}", target.getDisplayName(), "{RANGE}", Integer.toString(MAX_DISTANCE)));
+				} else if (player.getLocation().distance(target.getLocation()) > ConfigManager.MAX_DISTANCE) {
+					player.sendMessage(MessageParser.parseMessage(messages.get("NOT_IN_RANGE"), "{PLAYER}", target.getDisplayName(), "{RANGE}", Integer.toString(ConfigManager.MAX_DISTANCE)));
 				} else if (duels.get(target) != null && duels.get(target).target == player) {
 					duels.put(player, duels.get(target));
 					duels.get(target).accept();
@@ -219,8 +203,8 @@ public class Duels extends JavaPlugin {
 			} else if (subcommand.equalsIgnoreCase("highscores")) {
 				List<String> players = new ArrayList<String>(highscores.getKeys(false));
 				Collections.sort(players, new HighscoreComparator());
-				player.sendMessage("Top " + Integer.toString(Math.max(DEFAULT_TOP_COUNT, players.size())) + " Duelists:");
-				for (int i = 0; i < Math.max(DEFAULT_TOP_COUNT, players.size()); i++) {
+				player.sendMessage("Top " + Integer.toString(Math.max(ConfigManager.DEFAULT_TOP_COUNT, players.size())) + " Duelists:");
+				for (int i = 0; i < Math.max(ConfigManager.DEFAULT_TOP_COUNT, players.size()); i++) {
 					player.sendMessage(Integer.toString(i + 1) + ". " + players.get(i));
 				}
 			}
@@ -247,53 +231,10 @@ public class Duels extends JavaPlugin {
 		setupEconomy();
 		// Set configuration values
 		Configuration config = getConfig();
-		// Max distance between players.
-		MAX_DISTANCE = config.getInt("maxdistance", 20);
-		config.set("maxdistance", MAX_DISTANCE);
-		// Max distance between players during the duel. (Instead of surrender)
-		FORCE_FIELD_DURING = config.getBoolean("forcefeild.during", false);
-		config.set("forcefeild.during", FORCE_FIELD_DURING);
-		// Max distance between players while preparing the duel. (Instead of
-		// cancel)
-		FORCE_FIELD_BEFORE = config.getBoolean("forcefeild.before", false);
-		config.set("forcefeild.before", FORCE_FIELD_BEFORE);
-		// Whether or not to override other pvp plugins during duels
-		FORCE_PVP = config.getBoolean("forcepvp", true);
-		config.set("forcepvp", FORCE_PVP);
-		// Whether or not to use permissions
-		USE_PERMISSIONS = config.getBoolean("usepermissions", true);
-		config.set("usepermissions", USE_PERMISSIONS);
-		// If people can pvp outside of duels
-		NO_DUEL_PVP = config.getBoolean("noduelpvp", false);
-		config.set("noduelpvp", NO_DUEL_PVP);
+		ConfigManager.loadConfig(this);
 		// The prefix that goes in front of all messages
 		MESSAGE_PREFIX = config.getString("messageprefix", "&4[DUELS]&f");
 		config.set("messageprefix", MESSAGE_PREFIX);
-		// How to weight duel rankings
-		RANKING_WEIGHT = config.getDouble("highscores.weightedratings", 1);
-		config.set("highscores.weightedratings", RANKING_WEIGHT);
-		// The maximum ranking effect a duel can have
-		RANKING_MAGNITUDE = config.getDouble("highscores.ratingmagnitude", 10);
-		config.set("highscores.weightedratings", RANKING_MAGNITUDE);
-		// The starting rating for new players
-		STARTING_RATING = config.getDouble("highscores.weightedratings", 1000);
-		config.set("highscores.rankingmagnitude", STARTING_RATING);
-		// The starting rating for new players
-		DEFAULT_TOP_COUNT = config.getInt("highscores.defaulttopcount", 10);
-		config.set("highscores.defaulttopcount", DEFAULT_TOP_COUNT);
-		// The default stake
-		STAKE = config.getInt("defaults.stake", 0);
-		config.set("defaults.stake", STAKE);
-		// The default wolves setting
-		WOLVES = config.getBoolean("defaults.wolves", true);
-		config.set("defaults.wolves", WOLVES);
-		// The default food setting
-		FOOD = config.getBoolean("defaults.food", true);
-		config.set("defaults.food", FOOD);
-		// The default keepitems setting
-		KEEP_ITEMS = config.getBoolean("defaults.keepitems", true);
-		config.set("defaults.keepitems", KEEP_ITEMS);
-		DISABLED_WORLDS = config.getStringList("disabledworlds");
 		// Message if sent from console
 		messages.put("CLIENT_ONLY", config.getString("messages.clientonly", "Duels can only be used from the client."));
 		config.set("messages.clientonly", messages.get("CLIENT_ONLY"));

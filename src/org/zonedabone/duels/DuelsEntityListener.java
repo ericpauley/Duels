@@ -38,15 +38,15 @@ public class DuelsEntityListener implements Listener {
 			} else {
 				return;
 			}
-			if (Duels.DISABLED_WORLDS.contains(pDamager.getWorld().getName())) {
+			if (ConfigManager.DISABLED_WORLDS.contains(pDamager.getWorld().getName())) {
 				return;
 			}
 			if (Duels.duels.get(pDamager) == Duels.duels.get(pDamaged) && Duels.duels.get(pDamager) != null && Duels.duels.get(pDamager).targetstage == 2 && Duels.duels.get(pDamager).starterstage == 2) {
-				if (Duels.FORCE_PVP) {
+				if (ConfigManager.FORCE_PVP) {
 					e.setCancelled(false);
 				}
 			} else {
-				if (!Duels.NO_DUEL_PVP) {
+				if (!ConfigManager.NO_DUEL_PVP) {
 					e.setCancelled(true);
 				}
 			}
