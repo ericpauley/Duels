@@ -1,0 +1,50 @@
+maxdistance: 20
+forcefeild:
+  during: false
+  before: false
+forcepvp: true
+usepermissions: true
+noduelpvp: false
+messageprefix: '&4[DUELS]&f'
+highscores:
+  weightedratings: 10.0
+  rankingmagnitude: 10.0
+  defaulttopcount: 10
+defaults:
+  stake: 0
+  wolves: true
+  food: true
+  keepitems: true
+messages:
+  clientonly: Duels can only be used from the client.
+  alreadydueling: You are currently in a duel!
+  notdueling: You're not in a duel!
+  cantduelself: You can't duel yourself!
+  playeroffline: '{PLAYER} is offline.'
+  notinrange: '{PLAYER} is not in range. ({RANGE} blocks)'
+  selfaccept: Accepted {PLAYER}'s duel.
+  otheraccept: '{PLAYER} has accepted your duel request.'
+  config: set duel options with /duel set <option> <on/off>
+  selfrequest: Duel request sent to {PLAYER}.
+  otherrequest: '{PLAYER} has requested to duel with you.'
+  cancelstarted: You can't cancel a duel in progress! Use '/duel surrender' instead.
+  surrendernotstarted: The duel has not started yet. Use '/duel cancel' instead.
+  blockconfig: Now is not the time to change duel settings.
+  playerready: '{PLAYER} is ready to start the duel.'
+  duelstart: FIGHT TO THE DEATH!
+  duelcancel: The duel has been canceled.
+  duellose: You lost the duel!
+  duelwin: You won the duel!
+  setkeepitems: You will keep you items if you die.
+  setloseitems: Your opponent will get your items if you die.
+  setstake: '{PLAYER} set their stake to {STAKE}.'
+  blocksetstake: You can't afford to set your stake to that.
+  wolfenable: Wolves are enabled.
+  wolfdisable: Wolves are disabled.
+  foodenable: Food is enabled.
+  fooddisable: Food is disabled.
+  blockfood: Food is disabled in this duel!
+  noperms: You don't have permission to do that.
+  alreadyconfirmed: You've already confirmed the settings in this duel.
+  notconfig: Your opponent is not ready for that.
+  worlddisabled: You cannot duel in this world.
